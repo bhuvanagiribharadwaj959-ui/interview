@@ -1,0 +1,7 @@
+FROM gcc:latest
+WORKDIR /app
+
+# Use useradd for Debian-based images
+RUN useradd -m coder
+
+USER coder

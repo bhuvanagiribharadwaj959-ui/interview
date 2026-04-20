@@ -1,0 +1,148 @@
+.section {
+  width: 100%;
+  background-color: #f8fafc;
+  padding: 80px 40px;
+}
+
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.headingBlock {
+  text-align: center;
+  margin-bottom: 60px;
+}
+
+.title {
+  font-family: 'Sora', sans-serif;
+  font-size: 42px;
+  font-weight: 700;
+  color: #0f172a;
+  margin-bottom: 16px;
+  line-height: 1.2;
+}
+
+.subtitle {
+  font-size: 16px;
+  color: #64748b;
+  max-width: 600px;
+  margin: 0 auto;
+  line-height: 1.6;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
+}
+
+/* Animations */
+@keyframes fadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(24px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes rotateBorder {
+  0% { transform: translate(-50%, -50%) rotate(0deg); }
+  100% { transform: translate(-50%, -50%) rotate(360deg); }
+}
+
+.cardContainer {
+  /* Using a container for the animation to separate it from the card's visual transforms */
+  /* animation: fadeUp 0.6s ease-out both;  <-- Removed to let Framer Motion handle it */
+}
+
+.card {
+  position: relative;
+  border-radius: 16px;
+  background: #e2e8f0; /* Default static border color */
+  padding: 32px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.05); /* 5% opacity black */
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  overflow: hidden; /* Clips the rotating gradient */
+  border: none; /* Removed standard border to use pseudo-element method */
+  z-index: 1;
+}
+
+/* The card's white background */
+.card::after {
+  content: "";
+  position: absolute;
+  inset: 1px; /* 1px border width */
+  background: white;
+  border-radius: 15px; /* 16px - 1px */
+  z-index: -1;
+}
+
+/* The rotating gradient border */
+.card::before {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 200vmax; /* Large enough to cover the card during rotation */
+  height: 200vmax;
+  background: conic-gradient(
+    from 0deg,
+    transparent 0deg,
+    transparent 80deg,
+    #2563EB 100deg,   /* Blue */
+    #9333ea 140deg,   /* Purple */
+    #06b6d4 180deg,   /* Cyan */
+    #2563EB 220deg,   /* Back to Blue */
+    transparent 360deg
+  );
+  transform: translate(-50%, -50%);
+  z-index: -2;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.card:hover::before {
+  opacity: 1;
+  animation: rotateBorder 3s linear infinite;
+}
+
+.cardElevated {
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.10); /* 10% opacity black */
+  transform: scale(1.02);
+}
+
+.iconChip {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  padding: 6px 12px;
+  margin-bottom: 24px;
+  font-size: 20px; /* Adjusted icon size for visibility */
+  font-weight: 600;
+  font-family: inherit; 
+  align-self: flex-start;
+  line-height: 1;
+}
+
+.cardTitle {
+  font-size: 20px;
+  font-weight: 700;
+  color: #0f172a;
+  margin-bottom: 8px;
+  margin-top: 0;
+}
+
+.cardDesc {
+  font-size: 15px;
+  color: #64748b;
+  line-height: 1.6;
+  margin: 0;
+}

@@ -1,0 +1,63 @@
+{
+  "name": "udyogaprep",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "node --env-file=.env server.js",
+    "build": "next build",
+    "start": "node --env-file=.env server.js",
+    "lint": "next lint"
+  },
+  "dependencies": {
+    "@monaco-editor/react": "^4.6.0",
+    "@radix-ui/react-slot": "^1.2.4",
+    "autoprefixer": "^10.4.24",
+    "bcryptjs": "^3.0.2",
+    "class-variance-authority": "^0.7.1",
+    "clsx": "^2.1.1",
+    "firebase": "^12.6.0",
+    "framer-motion": "^12.38.0",
+    "jsonwebtoken": "^9.0.2",
+    "lucide-react": "^0.575.0",
+    "monaco-editor": "^0.50.0",
+    "monaco-languageclient": "^10.7.0",
+    "mongodb": "^6.20.0",
+    "motion": "^12.38.0",
+    "next": "^16.1.6",
+    "next-themes": "^0.4.6",
+    "node-pty": "^1.1.0",
+    "ogl": "^1.0.11",
+    "pdf-parse": "^2.4.5",
+    "postcss": "^8.5.6",
+    "prismjs": "^1.30.0",
+    "pyright": "^1.1.408",
+    "react": "^19.2.4",
+    "react-dom": "^19.2.4",
+    "react-resizable-panels": "^4.9.0",
+    "react-simple-code-editor": "^0.14.1",
+    "recharts": "^3.8.0",
+    "tailwind-merge": "^3.5.0",
+    "tailwindcss": "^3.4.19",
+    "vscode-languageserver": "^9.0.1",
+    "vscode-languageserver-protocol": "^3.17.5",
+    "vscode-languageserver-types": "^3.17.5",
+    "vscode-ws-jsonrpc": "^3.5.0",
+    "ws": "^8.19.0"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.39.1",
+    "@types/node": "25.3.2",
+    "@types/prismjs": "^1.26.6",
+    "@types/react": "^19.2.7",
+    "@types/react-dom": "^19.2.3",
+    "eslint": "^9.39.1",
+    "eslint-plugin-react-hooks": "^7.0.1",
+    "eslint-plugin-react-refresh": "^0.4.24",
+    "globals": "^16.5.0",
+    "typescript": "5.9.3"
+  },
+  "overrides": {
+    "vite": "^8.0.0-beta.13"
+  }
+}

@@ -1,0 +1,7 @@
+FROM openjdk:17-slim
+WORKDIR /app
+
+# Debian-based fix
+RUN useradd -m coder
+
+USER coder

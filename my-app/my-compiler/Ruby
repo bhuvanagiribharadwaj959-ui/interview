@@ -1,0 +1,4 @@
+FROM ruby:3.2-alpine
+WORKDIR /app
+RUN adduser -D coder
+USER coder

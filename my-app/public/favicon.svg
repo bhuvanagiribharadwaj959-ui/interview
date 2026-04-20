@@ -1,0 +1,15 @@
+<svg width="512" height="512" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background -->
+  <rect width="512" height="512" fill="#1a3340" />
+  
+  <!-- Layer 1: Long diagonal shadow -->
+  <rect x="96" y="96" width="360" height="360" rx="48" fill="#12272f" />
+  
+  <!-- Layer 2: Orange rounded square tile -->
+  <rect x="76" y="56" width="360" height="360" rx="48" fill="#F97316" />
+  
+  <!-- Layer 3: Letter U -->
+  <rect x="148" y="148" width="60" height="180" rx="12" fill="#1e2d2f" />
+  <rect x="304" y="148" width="60" height="180" rx="12" fill="#1e2d2f" />
+  <path d="M148 288 Q148 380 256 380 Q364 380 364 288" stroke="#1e2d2f" stroke-width="60" fill="none" stroke-linecap="round" />
+</svg>

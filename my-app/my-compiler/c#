@@ -1,0 +1,7 @@
+FROM mcr.microsoft.com/dotnet/sdk:7.0
+
+# In Debian/Ubuntu, we use 'useradd' instead of 'adduser -D'
+RUN useradd -m coder
+
+WORKDIR /app
+USER coder

@@ -1,0 +1,227 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* VS Code Theme System - CSS Variables */
+:root {
+  /* Default to VS Code Dark Theme */
+  --editor-background: #1e1e1e;
+  --editor-foreground: #d4d4d4;
+  --editor-line-numbers-bg: #1e1e1e;
+  --editor-line-number-fg: #858585;
+  --editor-line-number-active-fg: #c6c6c6;
+  
+  /* Selection and cursor */
+  --editor-selection-bg: #264f78;
+  --editor-selection-inactive-bg: #3a3d41;
+  --editor-selection-fg: #ffffff;
+  --editor-cursor-fg: #aeafad;
+  --editor-line-highlight-bg: #2a2d2e;
+  --editor-cursor-line-bg: #2a2d2e;
+  
+  /* UI elements */
+  --editor-group-tabs-bg: #1e1e1e;
+  --editor-group-empty-bg: #1e1e1e;
+  --editor-pane-bg: #1e1e1e;
+  --editor-widget-bg: #252526;
+  --editor-widget-border: #454545;
+  --tab-active-bg: #1e1e1e;
+  --tab-inactive-bg: #2d2d30;
+  --tab-border: #3e3e42;
+  --tab-active-fg: #ffffff;
+  --tab-inactive-fg: #969696;
+  
+  /* Status bar */
+  --status-bar-bg: #007acc;
+  --status-bar-fg: #ffffff;
+  
+  /* Input and buttons */
+  --input-bg: #3c3c3c;
+  --input-border: #3e3e42;
+  --input-fg: #cccccc;
+  --input-placeholder-fg: #a6a6a6;
+  --button-bg: #0e639c;
+  --button-fg: #ffffff;
+  --button-hover-bg: #1177bb;
+  
+  /* Terminal colors */
+  --terminal-bg: #1e1e1e;
+  --terminal-fg: #cccccc;
+  --terminal-green: #0dbc79;
+  --terminal-red: #cd3131;
+  --terminal-yellow: #e5e510;
+  --terminal-blue: #2b7bdb;
+  
+  /* Legacy VS Code colors for backward compatibility */
+  --vscode-bg: #1e1e1e;
+  --vscode-editor: #252526;
+  --vscode-editor-light: #2d2d30;
+  --vscode-input: #3c3c3c;
+  --vscode-button: #0e639c;
+  --vscode-button-hover: #1177bb;
+  --vscode-focus: #264f78;
+  --vscode-text: #d4d4d4;
+  --vscode-text-muted: #858585;
+  --vscode-text-lighter: #cccccc;
+  --vscode-keyword: #569cd6;
+  --vscode-keyword-alt: #c586c0;
+  --vscode-class: #4ec9b0;
+  --vscode-string: #ce9178;
+  --vscode-comment: #6a9955;
+  --vscode-function: #dcdcaa;
+  --vscode-variable: #9cdcfe;
+  --vscode-tag: #4ec9b0;
+  --vscode-number: #b5cea8;
+  --vscode-error: #f48771;
+  --vscode-warning: #dcdcaa;
+  --vscode-success: #4ec9b0;
+  --vscode-info: #569cd6;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html, body {
+  background-color: var(--vscode-bg);
+  color: var(--vscode-text);
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  scroll-behavior: smooth;
+}
+
+code, pre {
+  font-family: 'Fira Code', 'Monaco', 'Courier New', monospace;
+}
+
+/* Scrollbar styling */
+::-webkit-scrollbar {
+  width: 12px;
+  height: 12px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--vscode-bg);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--vscode-editor);
+  border-radius: 6px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--vscode-input);
+}
+
+/* Button styles */
+button {
+  background-color: var(--vscode-button);
+  color: var(--vscode-text);
+  border: none;
+  padding: 8px 16px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: background-color 0.2s ease;
+}
+
+button:hover {
+  background-color: var(--vscode-button-hover);
+}
+
+button:active {
+  background-color: var(--vscode-focus);
+}
+
+/* Input styles */
+input, textarea, select {
+  background-color: var(--vscode-input);
+  color: var(--vscode-text);
+  border: 1px solid var(--vscode-editor);
+  padding: 8px 12px;
+  border-radius: 4px;
+  font-size: 14px;
+  transition: border-color 0.2s ease;
+}
+
+input:focus, textarea:focus, select:focus {
+  outline: none;
+  border-color: var(--vscode-focus);
+  box-shadow: 0 0 0 2px var(--vscode-focus);
+}
+
+/* Link styles */
+a {
+  color: var(--vscode-keyword);
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+
+a:hover {
+  color: var(--vscode-function);
+  text-decoration: underline;
+}
+
+/* Selection styles */
+::selection {
+  background-color: var(--vscode-focus);
+  color: var(--vscode-text);
+}
+/* Heading styles */
+h1, h2, h3, h4, h5, h6 {
+  color: var(--vscode-text-lighter);
+  font-weight: 600;
+  margin-bottom: 1rem;
+}
+
+h1 { font-size: 2rem; }
+h2 { font-size: 1.75rem; }
+h3 { font-size: 1.5rem; }
+h4 { font-size: 1.25rem; }
+h5 { font-size: 1.1rem; }
+h6 { font-size: 1rem; }
+
+/* Professional card styles */
+.card, .card-container {
+  background-color: var(--vscode-editor);
+  border: 1px solid var(--vscode-editor-light);
+  border-radius: 8px;
+  padding: 1.5rem;
+  transition: all 0.2s ease;
+}
+
+.card:hover, .card-container:hover {
+  border-color: var(--vscode-button);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+/* Badge styles */
+.badge {
+  display: inline-block;
+  padding: 0.25rem 0.75rem;
+  border-radius: 12px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  background-color: var(--vscode-editor-light);
+  color: var(--vscode-text);
+}
+
+.badge-primary {
+  background-color: var(--vscode-keyword-alt);
+  color: var(--vscode-bg);
+}
+
+.badge-success {
+  background-color: var(--vscode-success);
+  color: var(--vscode-bg);
+}
+
+.badge-error {
+  background-color: var(--vscode-error);
+  color: var(--vscode-bg);
+}

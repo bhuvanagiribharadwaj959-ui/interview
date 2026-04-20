@@ -1,0 +1,63 @@
+  const router = useRouter();
+  const [language, setLanguage] = useState("Python");
+  const [code, setCode] = useState(INITIAL_CODE);
+  const [output, setOutput] = useState("");
+  const [problemDescription, setProblemDescription] = useState<{ title: string; body: string; samples: { input: string; output: string; explanation?: string }[]; constraints?: string[]; hints?: string[]; difficulty?: string }>({
+    title: "Coding Challenge",
+    body: "Loading question...",
+    samples: [],
+    constraints: [],
+    hints: []
+  });
+  const [isRunning, setIsRunning] = useState(false);
+  const [showConsole, setShowConsole] = useState(false);
+  const [isLanguageDropdownOpen, setIsLanguageDropdownOpen] = useState(false);
+  const [leftPanelWidth, setLeftPanelWidth] = useState(460);
+  const [terminalHeight, setTerminalHeight] = useState(192);
+  const [activeResizer, setActiveResizer] = useState<null | 'question' | 'terminal'>(null);
+  const [aiFeedback, setAiFeedback] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isAiSpeaking, setIsAiSpeaking] = useState(false);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+  
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const highlightedRef = useRef<HTMLPreElement>(null);
+  const editorRef = useRef<any>(null);
+  const lspClientRef = useRef<any>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const rightPanelRef = useRef<HTMLDivElement>(null);
+  const monacoLanguage = MONACO_LANGUAGE_IDS[language] || language.toLowerCase();
+
+  useEffect(() => {
+    if (!activeResizer) {
+      return undefined;
+    }
+
+    const handlePointerMove = (event: PointerEvent) => {
+      if (activeResizer === 'question' && containerRef.current) {
+        const bounds = containerRef.current.getBoundingClientRect();
+        const nextWidth = event.clientX - bounds.left;
+        const minWidth = 320;
+        const maxWidth = Math.max(minWidth, bounds.width * 0.65);
+        setLeftPanelWidth(Math.min(maxWidth, Math.max(minWidth, nextWidth)));
+      }
+
+      if (activeResizer === 'terminal' && rightPanelRef.current) {
+        const bounds = rightPanelRef.current.getBoundingClientRect();
+        const nextHeight = bounds.bottom - event.clientY - 58;
+        const minHeight = 120;
+        const maxHeight = Math.max(minHeight, bounds.height * 0.55);
+        setTerminalHeight(Math.min(maxHeight, Math.max(minHeight, nextHeight)));
+      }
+    };
+
+    const handlePointerUp = () => {
+      setActiveResizer(null);
+    };
+
+    document.body.style.userSelect = 'none';
+    document.body.style.cursor = activeResizer === 'question' ? 'col-resize' : 'row-resize';
+    window.addEventListener('pointermove', handlePointerMove);
+    window.addEventListener('pointerup', handlePointerUp);
+
+  

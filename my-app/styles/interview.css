@@ -1,0 +1,228 @@
+/* 
+  Google-inspired Minimal & Glassy Theme 
+  Focuses on pristine whitespace, subtle shadows, and fluid animations.
+*/
+
+:root {
+  --google-blue: #1a73e8;
+  --google-blue-hover: #1557b0;
+  --google-blue-light: #e8f0fe;
+  --google-text: #202124;
+  --google-text-secondary: #5f6368;
+  --glass-bg: rgba(255, 255, 255, 0.85);
+  --glass-border: rgba(255, 255, 255, 0.4);
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  background-color: #f8fafd;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+}
+
+/* Elegant Mesh/Gradient Background */
+.ambient-bg-premium {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+  z-index: -1;
+  background: 
+    radial-gradient(at 0% 0%, rgba(232, 240, 254, 1) 0px, transparent 50%),
+    radial-gradient(at 100% 0%, rgba(210, 227, 252, 0.8) 0px, transparent 50%),
+    radial-gradient(at 100% 100%, rgba(255, 255, 255, 1) 0px, transparent 50%),
+    radial-gradient(at 0% 100%, rgba(174, 203, 250, 0.4) 0px, transparent 50%);
+  background-color: #f8fafd;
+}
+
+/* Refined Glass Card (Google Material 3 mixed with Glassmorphism) */
+.glass-card-premium {
+  background: var(--glass-bg);
+  backdrop-filter: blur(40px);
+  -webkit-backdrop-filter: blur(40px);
+  border: 1px solid var(--glass-border);
+  box-shadow: 
+    0 4px 6px -1px rgba(0, 0, 0, 0.05),
+    0 10px 15px -3px rgba(0, 0, 0, 0.02),
+    0 20px 40px -5px rgba(26, 115, 232, 0.05);
+}
+
+/* Custom Google-like Inputs */
+.google-option-card {
+  background: white;
+  border: 1px solid #dadce0;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.google-option-card:hover {
+  background: white !important;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.08), 0 4px 12px rgba(0, 0, 0, 0.04);
+  border-color: transparent;
+  transform: translateY(-2px);
+}
+.google-option-card.selected {
+  background: white !important;
+  border: 2px solid var(--google-blue);
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.08), 0 4px 12px rgba(0, 0, 0, 0.04);
+  transform: translateY(-2px);
+}
+
+.google-textarea {
+  background: white;
+  border: 1px solid #dadce0;
+  transition: all 0.2s ease;
+  color: var(--google-text);
+}
+.google-textarea:focus {
+  border-color: var(--google-blue);
+  box-shadow: inset 0 0 0 1px var(--google-blue);
+  outline: none;
+}
+.google-textarea::placeholder {
+  color: #9aa0a6;
+}
+
+.google-file-drop {
+  border: 2px dashed #dadce0;
+  background: #f8f9fa;
+  transition: all 0.25s ease;
+}
+.google-file-drop:hover, .google-file-drop.active {
+  background: var(--google-blue-light);
+  border-color: var(--google-blue);
+}
+
+/* Premium Fluid AI Orb */
+.ai-orb-wrapper {
+  position: relative;
+  width: 220px;
+  height: 220px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin: 0 auto;
+  filter: drop-shadow(0 15px 35px rgba(26, 115, 232, 0.3));
+}
+
+.orb-layer {
+  position: absolute;
+  inset: 10%;
+  mix-blend-mode: multiply;
+  animation: 
+    fluid-morph 8s ease-in-out infinite alternate, 
+    spin-orb 15s linear infinite;
+}
+
+.orb-layer:nth-child(1) {
+  background: radial-gradient(circle at 30% 30%, #ffffff, #8ab4f8, #1a73e8);
+  border-radius: 40% 60% 60% 40% / 50% 50% 50% 50%;
+  animation-duration: 6s, 12s;
+  opacity: 0.9;
+}
+
+.orb-layer:nth-child(2) {
+  background: radial-gradient(circle at 70% 70%, #ffffff, #669df6, #1967d2);
+  border-radius: 60% 40% 40% 60% / 50% 50% 50% 50%;
+  animation-duration: 7s, 15s;
+  animation-direction: alternate, reverse;
+  opacity: 0.8;
+}
+
+.orb-layer:nth-child(3) {
+  background: radial-gradient(circle at 50% 50%, #e8f0fe, #4285f4, #0d47a1);
+  border-radius: 50% 50% 60% 40% / 40% 60% 40% 60%;
+  animation-duration: 9s, 18s;
+  opacity: 0.7;
+}
+
+.orb-core-glow {
+  position: absolute;
+  inset: 20%;
+  background: white;
+  border-radius: 50%;
+  filter: blur(15px);
+  animation: pulse-glow 3s ease-in-out infinite alternate;
+}
+
+@keyframes fluid-morph {
+  0% { border-radius: 40% 60% 60% 40% / 50% 50% 50% 50%; }
+  33% { border-radius: 55% 45% 40% 60% / 60% 40% 60% 40%; }
+  66% { border-radius: 45% 55% 60% 40% / 40% 60% 40% 60%; }
+  100% { border-radius: 60% 40% 40% 60% / 50% 50% 50% 50%; }
+}
+
+@keyframes spin-orb {
+  100% { transform: rotate(360deg); }
+}
+
+@keyframes pulse-glow {
+  0% { transform: scale(0.9); opacity: 0.7; }
+  100% { transform: scale(1.1); opacity: 1; }
+}
+
+/* Google Assistant style equalizer */
+.google-equalizer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  height: 24px;
+}
+
+.eq-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 4px;
+  background-color: var(--google-blue);
+  animation: eq-bounce 1s ease-in-out infinite;
+}
+
+.eq-dot:nth-child(1) { background-color: #4285f4; animation-delay: 0.0s; }
+.eq-dot:nth-child(2) { background-color: #ea4335; animation-delay: 0.2s; }
+.eq-dot:nth-child(3) { background-color: #fbbc05; animation-delay: 0.4s; }
+.eq-dot:nth-child(4) { background-color: #34a853; animation-delay: 0.6s; }
+
+@keyframes eq-bounce {
+  0%, 100% { transform: scaleY(1); }
+  50% { transform: scaleY(2.5); border-radius: 4px; }
+}
+
+/* Minimal Subtitle styling */
+.ai-subtitle {
+  color: var(--google-text);
+  font-weight: 500;
+  letter-spacing: -0.02em;
+}
+
+/* Buttons */
+.btn-primary {
+  background-color: var(--google-blue);
+  color: white;
+  transition: background-color 0.2s ease, box-shadow 0.2s ease;
+}
+.btn-primary:hover:not(:disabled) {
+  background-color: var(--google-blue-hover);
+  box-shadow: 0 1px 3px 0 rgba(60,64,67,0.3), 0 4px 8px 3px rgba(60,64,67,0.15);
+}
+.btn-primary:disabled {
+  background-color: #e8eaed;
+  color: #9aa0a6;
+  cursor: not-allowed;
+}
+
+.btn-secondary {
+  color: var(--google-blue);
+  background: transparent;
+  transition: background-color 0.2s ease;
+}
+.btn-secondary:hover:not(:disabled) {
+  background-color: rgba(26, 115, 232, 0.04);
+}
+.btn-secondary:disabled {
+  color: #9aa0a6;
+  cursor: not-allowed;
+}
+
+.no-scrollbar::-webkit-scrollbar { display: none; }
+.no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }

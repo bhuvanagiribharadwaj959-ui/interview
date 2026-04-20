@@ -1,0 +1,702 @@
+[
+  {
+    "Question Number": 1,
+    "Question": "Tell me about how you'd approach compiling versus interpreting code when building production systems. What trade-offs would you consider?",
+    "Answer": "Compilation creates executable machine code upfront for speed and error detection. Interpretation trades startup time for flexibility. For production: compiled languages offer performance, interpreted languages offer rapid development and portability.",
+    "Category": "General Programming",
+    "Difficulty": "Medium"
+  },
+  {
+    "Question Number": 2,
+    "Question": "Describe how you'd explain polymorphism to a junior developer and give a real-world example from your experience.",
+    "Answer": "Polymorphism lets different objects respond to the same message differently. Example: a payment system handles credit cards, PayPal, and crypto the same way through a common interface, but each processes differently. Enables extensibility without changing existing code.",
+    "Category": "General Programming",
+    "Difficulty": "Medium"
+  },
+  {
+    "Question Number": 3,
+    "Question": "Walk me through how you'd implement encapsulation in a real project. Why would you restrict access to data?",
+    "Answer": "Encapsulation hides internal state and exposes controlled interfaces. Example: a Bank account class keeps balance private, only allowing deposits/withdrawals through validated methods. Prevents invalid states and enforces business rules.",
+    "Category": "General Programming",
+    "Difficulty": "Hard"
+  },
+  {
+    "Question Number": 4,
+    "Question": "When would you use an abstract class versus an interface in your design? Walk me through a concrete scenario.",
+    "Answer": "Abstract classes for shared implementation and state (use extends). Interfaces for contracts without implementation (use implements). Example: Animal abstract class with sleep() implementation, but Flyable interface forces fly() contract on different types.",
+    "Category": "General Programming",
+    "Difficulty": "Medium"
+  },
+  {
+    "Question Number": 5,
+    "Question": "Describe how the four OOP principles guide your architecture decisions. Can you give specific examples?",
+    "Answer": "Encapsulation hides complexity. Inheritance enables code reuse. Polymorphism allows flexibility. Abstraction reduces coupling. Example: designing a game engine—abstract GameObject, inherit specific types, override behavior polymorphically, encapsulate physics separately.",
+    "Category": "General Programming",
+    "Difficulty": "Medium"
+  },
+  {
+    "Question Number": 6,
+    "Question": "Tell me about a time when a constructor helped prevent bugs in your code. What went wrong without it?",
+    "Answer": "Constructors guarantee valid initial state. Example: database connection constructor validates credentials immediately, not later on first query. Without it, queries fail mysteriously. Ensures fail-fast principle and prevents partially initialized objects.",
+    "Category": "General Programming",
+    "Difficulty": "Medium"
+  },
+  {
+    "Question Number": 7,
+    "Question": "When optimizing code, how would you decide between using stack versus heap memory? What performance implications matter?",
+    "Answer": "Stack is faster for small, short-lived data (local variables, function calls). Heap for large/long-lived objects. Stack overflows quickly, heap has fragmentation. In production: use stack-allocated structures for hot loops, heap for flexible data structures.",
+    "Category": "General Programming",
+    "Difficulty": "Medium"
+  },
+  {
+    "Question Number": 8,
+    "Question": "What is a design pattern, and can you name a few?",
+    "Answer": "Design patterns are solutions to common design problems. Examples: Singleton, Factory, Observer, MVC.",
+    "Category": "General Programming",
+    "Difficulty": "Medium"
+  },
+  {
+    "Question Number": 9,
+    "Question": "Define the term \"DRY\" in software development.",
+    "Answer": "DRY (Don't Repeat Yourself) advocates for avoiding code duplication by reusing existing code.",
+    "Category": "General Programming",
+    "Difficulty": "Medium"
+  },
+  {
+    "Question Number": 10,
+    "Question": "What is the SOLID principle?",
+    "Answer": "SOLID represents five design principles for OOP: Single Responsibility, Open/Closed, Liskov Substitution, Interface Segregation, Dependency Inversion.",
+    "Category": "General Program",
+    "Difficulty": "Hard"
+  },
+  {
+    "Question Number": 11,
+    "Question": "What is the difference between an array and a linked list?",
+    "Answer": "An array has fixed size and stores elements in contiguous memory; a linked list consists of nodes with data and references, allowing dynamic size.",
+    "Category": "Data Structures",
+    "Difficulty": "Easy"
+  },
+  {
+    "Question Number": 12,
+    "Question": "Explain the time complexity of an algorithm.",
+    "Answer": "Time complexity measures the time an algorithm takes relative to its input size, expressed in Big O notation.",
+    "Category": "Data Structures",
+    "Difficulty": "Hard"
+  },
+  {
+    "Question Number": 13,
+    "Question": "Describe the difference between a binary search tree and a hash table.",
+    "Answer": "A binary search tree is hierarchical, maintaining order; a hash table maps keys to values for fast retrieval, without maintaining order.",
+    "Category": "Data Structures",
+    "Difficulty": "Medium"
+  },
+  {
+    "Question Number": 14,
+    "Question": "What is a linked list and how does it work?",
+    "Answer": "A linked list is a series of nodes each containing data and a reference to the next node, allowing dynamic memory allocation and efficient insertions/deletions.",
+    "Category": "Data Structures",
+    "Difficulty": "Medium"
+  },
+  {
+    "Question Number": 15,
+    "Question": "Explain the concept of recursion.",
+    "Answer": "Recursion is when a function calls itself to solve subproblems, with a base case to terminate recursion.",
+    "Category": "Data Structures",
+    "Difficulty": "Medium"
+  },
+  {
+    "Question Number": 16,
+    "Question": "What is Big O notation, and why is it important?",
+    "Answer": "Big O notation describes the upper bound of algorithm time complexity, important for comparing efficiency and growth rates.",
+    "Category": "Data Structures",
+    "Difficulty": "Medium"
+  },
+  {
+    "Question Number": 17,
+    "Question": "How do you perform a binary search on a sorted array?",
+    "Answer": "Binary search divides the search interval in half, repeatedly comparing the middle element to the target.",
+    "Category": "Data Structures",
+    "Difficulty": "Hard"
+  },
+  {
+    "Question Number": 18,
+    "Question": "Discuss the advantages and disadvantages of different sorting algorithms.",
+    "Answer": "Sorting algorithms vary in time/space complexity and stability. Quick Sort and Merge Sort are fast but more complex; Insertion and Bubble Sort are simple but slower.",
+    "Category": "Data Structures",
+    "Difficulty": "Medium"
+  },
+  {
+    "Question Number": 19,
+    "Question": "Explain how a hash table works.",
+    "Answer": "A hash table uses a hash function to map keys to values in an array, allowing fast O(1) access.",
+    "Category": "Data Structures",
+    "Difficulty": "Medium"
+  },
+  {
+    "Question Number": 20,
+    "Question": "What is dynamic programming?",
+    "Answer": "Dynamic programming solves complex problems by dividing them into smaller subproblems, avoiding redundant calculations.",
+    "Category": "Data Structures",
+    "Difficulty": "Hard"
+  },
+  {
+    "Question Number": 21,
+    "Question": "What is the difference between Java and JavaScript?",
+    "Answer": "Java is a compiled, statically-typed language used for server-side, mobile, and desktop apps. JavaScript is an interpreted, dynamically-typed language for web development.",
+    "Category": "Languages and Frameworks",
+    "Difficulty": "Medium"
+  },
+  {
+    "Question Number": 22,
+    "Question": "Describe the MVC architectural pattern.",
+    "Answer": "MVC divides an application into Model (data), View (UI), and Controller (input handling), promoting separation of concerns.",
+    "Category": "Languages and Frameworks",
+    "Difficulty": "Medium"
+  },
+  {
+    "Question Number": 23,
+    "Question": "What is a RESTful API?",
+    "Answer": "RESTful API is a web service implementation using HTTP methods to perform CRUD operations on resources, adhering to stateless, client-server architecture.",
+    "Category": "Languages and Frameworks",
+    "Difficulty": "Medium"
+  },
+  {
+    "Question Number": 24,
+    "Question": "Explain the use of \"this\" keyword in JavaScript.",
+    "Answer": "\"this\" in JavaScript refers to the execution context, varying based on function calling, global scope, or event handlers.",
+    "Category": "Languages and Frameworks",
+    "Difficulty": "Medium"
+  },
+  {
+    "Question Number": 25,
+    "Question": "What is a closure in programming?",
+    "Answer": "A closure is a function with access to its outer scope variables even after the outer function has executed.",
+    "Category": "Languages and Frameworks",
+    "Difficulty": "Medium"
+  },
+  {
+    "Question Number": 26,
+    "Question": "What are the differences between Python 2 and Python 3?",
+    "Answer": "Python 3 has print as a function, true division, Unicode support by default, and different syntax for exceptions, unlike Python 2.",
+    "Category": "Languages and Frameworks",
+    "Difficulty": "Medium"
+  },
+  {
+    "Question Number": 27,
+    "Question": "Discuss the role of a package manager like npm or pip.",
+    "Answer": "Package managers manage installation, update, and dependency resolution of libraries, simplifying library management in development.",
+    "Category": "Languages and Frameworks",
+    "Difficulty": "Hard"
+  },
+  {
+    "Question Number": 28,
+    "Question": "Explain the concept of multi-threading in Java.",
+    "Answer": "Multi-threading in Java allows concurrent execution of multiple threads, improving application responsiveness and performance.",
+    "Category": "Languages and Frameworks",
+    "Difficulty": "Medium"
+  },
+  {
+    "Question Number": 29,
+    "Question": "What is a Singleton pattern?",
+    "Answer": "Singleton ensures a class has only one instance and provides a global access point to it, useful for shared resources.",
+    "Category": "Languages and Frameworks",
+    "Difficulty": "Medium"
+  },
+  {
+    "Question Number": 30,
+    "Question": "What is a virtual function in C++?",
+    "Answer": "Virtual functions in C++ allow derived classes to override them, enabling runtime polymorphism and dynamic method dispatch.",
+    "Category": "Languages and Frameworks",
+    "Difficulty": "Medium"
+  },
+  {
+    "Question Number": 31,
+    "Question": "What is a database index, and why is it important?",
+    "Answer": "A database index speeds up data retrieval, similar to a book's index, improving query performance.",
+    "Category": "Database and SQL",
+    "Difficulty": "Medium"
+  },
+  {
+    "Question Number": 32,
+    "Question": "Explain the differences between SQL and NoSQL databases.",
+    "Answer": "SQL databases use structured query language with a predefined schema; NoSQL databases store schema-less data with flexible models.",
+    "Category": "Database and SQL",
+    "Difficulty": "Medium"
+  },
+  {
+    "Question Number": 33,
+    "Question": "What is a foreign key in a database?",
+    "Answer": "A foreign key links two tables by referring to the primary key in another table, ensuring referential integrity.",
+    "Category": "Database and SQL",
+    "Difficulty": "Medium"
+  },
+  {
+    "Question Number": 34,
+    "Question": "Describe the ACID properties in database transactions.",
+    "Answer": "ACID: Atomicity (indivisible transactions), Consistency (consistent state transitions), Isolation (independent transactions), Durability (persisted changes).",
+    "Category": "Database and SQL",
+    "Difficulty": "Hard"
+  },
+  {
+    "Question Number": 35,
+    "Question": "How do you optimize a SQL query for better performance?",
+    "Answer": "Optimize using indexes, efficient SQL, limiting data retrieval, analyzing query performance, and considering denormalization.",
+    "Category": "Database and SQL",
+    "Difficulty": "Easy"
+  },
+  {
+    "Question Number": 36,
+    "Question": "What is normalization in database design?",
+    "Answer": "Normalization organizes data into separate tables to reduce redundancy and improve integrity, following normalization forms.",
+    "Category": "Database and SQL",
+    "Difficulty": "Hard"
+  },
+  {
+    "Question Number": 37,
+    "Question": "Explain the difference between INNER JOIN and LEFT JOIN in SQL.",
+    "Answer": "INNER JOIN returns matching rows from both tables; LEFT JOIN returns all rows from the left table and matching rows from the right.",
+    "Category": "Database and SQL",
+    "Difficulty": "Medium"
+  },
+  {
+    "Question Number": 38,
+    "Question": "What is a stored procedure, and when would you use one?",
+    "Answer": "Stored procedures are precompiled SQL statements for data manipulation and logic, used for repetitive tasks and improving performance.",
+    "Category": "Database and SQL",
+    "Difficulty": "Medium"
+  },
+  {
+    "Question Number": 39,
+    "Question": "What is database denormalization, and when is it appropriate?",
+    "Answer": "Denormalization introduces redundancy for performance, useful in read-heavy scenarios at the expense of storage and complexity.",
+    "Category": "Database and SQL",
+    "Difficulty": "Medium"
+  },
+  {
+    "Question Number": 40,
+    "Question": "Discuss the advantages and disadvantages of using an ORM tool.",
+    "Answer": "ORM simplifies database interactions and is language-agnostic. It can introduce performance overhead and may limit database features.",
+    "Category": "Database and SQL",
+    "Difficulty": "Medium"
+  },
+  {
+    "Question Number": 41,
+    "Question": "What is the Document Object Model (DOM)?",
+    "Answer": "The DOM is a tree-like representation of a web page's structure, allowing manipulation of content, structure, and style via programming languages.",
+    "Category": "Web Development",
+    "Difficulty": "Hard"
+  },
+  {
+    "Question Number": 42,
+    "Question": "Explain the difference between HTTP and HTTPS.",
+    "Answer": "HTTP is an unsecured data transmission protocol; HTTPS is secure, encrypting data in transit using SSL/TLS.",
+    "Category": "Web Development",
+    "Difficulty": "Medium"
+  },
+  {
+    "Question Number": 43,
+    "Question": "What is CORS (Cross-Origin Resource Sharing)?",
+    "Answer": "CORS is a security measure allowing or restricting resources requested from another domain, managed via HTTP headers.",
+    "Category": "Web Development",
+    "Difficulty": "Medium"
+  },
+  {
+    "Question Number": 44,
+    "Question": "Describe the purpose of a web server like Apache or Nginx.",
+    "Answer": "Web servers handle HTTP requests, serve content, manage security, routing, and can act as reverse proxies for application servers.",
+    "Category": "Web Development",
+    "Difficulty": "Medium"
+  },
+  {
+    "Question Number": 45,
+    "Question": "What is a cookie, and how does it work?",
+    "Answer": "Cookies are data stored on the user's computer by the web server, sent with HTTP requests for session management, tracking, and storing preferences.",
+    "Category": "Web Development",
+    "Difficulty": "Hard"
+  },
+  {
+    "Question Number": 46,
+    "Question": "What is a session in web development?",
+    "Answer": "A session maintains stateful information across multiple HTTP requests, typically for user authentication and data storage.",
+    "Category": "Web Development",
+    "Difficulty": "Medium"
+  },
+  {
+    "Question Number": 47,
+    "Question": "Explain the concept of responsive web design.",
+    "Answer": "Responsive design ensures web content functions across different devices and screen sizes, using CSS media queries and flexible layouts.",
+    "Category": "Web Development",
+    "Difficulty": "Medium"
+  },
+  {
+    "Question Number": 48,
+    "Question": "Describe the differences between GET and POST requests.",
+    "Answer": "GET requests retrieve data and include parameters in the URL; POST requests send data to the server, encapsulating data in the request body.",
+    "Category": "Web Development",
+    "Difficulty": "Medium"
+  },
+  {
+    "Question Number": 49,
+    "Question": "What is the importance of SEO in web development?",
+    "Answer": "SEO enhances a website's visibility in search engine results, improving organic traffic and user reach through optimized content and structure.",
+    "Category": "Web Development",
+    "Difficulty": "Medium"
+  },
+  {
+    "Question Number": 50,
+    "Question": "How does a web browser render a web page?",
+    "Answer": "Browsers parse HTML to create a DOM, fetch resources, build a rendering tree, apply CSS, calculate layout, and paint the page on the screen.",
+    "Category": "Web Development",
+    "Difficulty": "Medium"
+  },
+  {
+    "Question Number": 51,
+    "Question": "What is unit testing, and why is it important?",
+    "Answer": "Unit testing evaluates individual code components, ensuring correctness and facilitating early defect detection.",
+    "Category": "Software Testing",
+    "Difficulty": "Medium"
+  },
+  {
+    "Question Number": 52,
+    "Question": "Explain the difference between black-box and white-box testing.",
+    "Answer": "Black-box tests functionality without internal code knowledge; white-box tests internal code logic and structure.",
+    "Category": "Software Testing",
+    "Difficulty": "Hard"
+  },
+  {
+    "Question Number": 53,
+    "Question": "What is regression testing?",
+    "Answer": "Regression testing ensures new code changes don't break existing features, maintaining functionality over updates.",
+    "Category": "Software Testing",
+    "Difficulty": "Easy"
+  },
+  {
+    "Question Number": 54,
+    "Question": "Describe the purpose of code reviews.",
+    "Answer": "Code reviews identify defects, improve quality, enforce standards, and facilitate knowledge sharing.",
+    "Category": "Software Testing",
+    "Difficulty": "Hard"
+  },
+  {
+    "Question Number": 55,
+    "Question": "What is continuous integration (CI) and continuous delivery (CD)?",
+    "Answer": "CI involves frequent code integration and testing; CD extends CI by deploying changes to production automatically after testing.",
+    "Category": "Software Testing",
+    "Difficulty": "Medium"
+  },
+  {
+    "Question Number": 56,
+    "Question": "Explain the concept of code coverage in testing.",
+    "Answer": "Code coverage measures the extent of code tested, assessing test thoroughness and identifying untested areas.",
+    "Category": "Software Testing",
+    "Difficulty": "Medium"
+  },
+  {
+    "Question Number": 57,
+    "Question": "What is a test case and how do you write one?",
+    "Answer": "A test case outlines test conditions, inputs, and expected results, structured with objective, steps, and documentation.",
+    "Category": "Software Testing",
+    "Difficulty": "Medium"
+  },
+  {
+    "Question Number": 58,
+    "Question": "What is load testing, and why is it necessary?",
+    "Answer": "Load testing evaluates system performance under expected load conditions, identifying bottlenecks and scalability issues.",
+    "Category": "Software Testing",
+    "Difficulty": "Medium"
+  },
+  {
+    "Question Number": 59,
+    "Question": "Describe the differences between manual and automated testing.",
+    "Answer": "Manual testing is human-driven; suitable for exploratory and UX testing. Automated testing uses tools for repetitive tasks; suitable for regression and performance testing.",
+    "Category": "Software Testing",
+    "Difficulty": "Hard"
+  },
+  {
+    "Question Number": 60,
+    "Question": "What is a bug tracking system?",
+    "Answer": "A bug tracking system logs, manages, and resolves issues in software development, ensuring systematic problem handling.",
+    "Category": "Software Testing",
+    "Difficulty": "Medium"
+  },
+  {
+    "Question Number": 61,
+    "Question": "What is Git, and how does it work?",
+    "Answer": "Git is a distributed version control system for tracking changes in source code, allowing collaborative work and branch management.",
+    "Category": "Version Control",
+    "Difficulty": "Medium"
+  },
+  {
+    "Question Number": 62,
+    "Question": "Explain the difference between Git and SVN (Subversion).",
+    "Answer": "Git is distributed, with local repository copies; SVN is centralized, requiring network connectivity for repository access.",
+    "Category": "Version Control",
+    "Difficulty": "Hard"
+  },
+  {
+    "Question Number": 63,
+    "Question": "What is a merge conflict, and how do you resolve it in Git?",
+    "Answer": "Merge conflicts occur when changes in different branches clash. Resolve by manually editing files and committing the result.",
+    "Category": "Version Control",
+    "Difficulty": "Medium"
+  },
+  {
+    "Question Number": 64,
+    "Question": "Describe the purpose of branching in version control.",
+    "Answer": "Branching isolates development work without affecting other parts of the repository, aiding in feature development and experimentation.",
+    "Category": "Version Control",
+    "Difficulty": "Medium"
+  },
+  {
+    "Question Number": 65,
+    "Question": "What is a pull request (PR), and how does it work?",
+    "Answer": "A PR is a request to merge code from one branch to another, facilitating code review and discussion before integration.",
+    "Category": "Version Control",
+    "Difficulty": "Medium"
+  },
+  {
+    "Question Number": 66,
+    "Question": "How do you handle code conflicts in a team project?",
+    "Answer": "Resolve code conflicts through communication, careful review, manual merging, testing, and documenting resolutions.",
+    "Category": "Version Control",
+    "Difficulty": "Medium"
+  },
+  {
+    "Question Number": 67,
+    "Question": "What is code refactoring, and why is it important?",
+    "Answer": "Refactoring improves code structure and readability without altering functionality, enhancing maintainability and quality.",
+    "Category": "Version Control",
+    "Difficulty": "Medium"
+  },
+  {
+    "Question Number": 68,
+    "Question": "Explain the role of Git branching strategies like GitFlow.",
+    "Answer": "GitFlow organizes branches and releases, defining naming conventions and branch purposes for structured and organized development.",
+    "Category": "Version Control",
+    "Difficulty": "Medium"
+  },
+  {
+    "Question Number": 69,
+    "Question": "What is Git rebase, and when would you use it?",
+    "Answer": "Git rebase re-applies commits onto another base for a cleaner history. Use with caution to maintain a linear project history.",
+    "Category": "Version Control",
+    "Difficulty": "Hard"
+  },
+  {
+    "Question Number": 70,
+    "Question": "Discuss the advantages of distributed version control systems.",
+    "Answer": "Distributed systems allow offline work, flexible branching/merging, faster operations, redundancy, and collaborative workflows.",
+    "Category": "Version Control",
+    "Difficulty": "Medium"
+  },
+  {
+    "Question Number": 71,
+    "Question": "Describe the concept of microservices architecture.",
+    "Answer": "Microservices architecture consists of small, independent services communicating via APIs, each responsible for specific functionality, promoting scalability and maintenance.",
+    "Category": "System Design",
+    "Difficulty": "Medium"
+  },
+  {
+    "Question Number": 72,
+    "Question": "What is a load balancer, and why is it used in web applications?",
+    "Answer": "A load balancer distributes incoming traffic across servers, ensuring resource efficiency, fault tolerance, and high availability.",
+    "Category": "System Design",
+    "Difficulty": "Medium"
+  },
+  {
+    "Question Number": 73,
+    "Question": "Explain the importance of caching in web applications.",
+    "Answer": "Caching stores frequently accessed data for faster retrieval, reducing backend load, improving performance, and enhancing user experience.",
+    "Category": "System Design",
+    "Difficulty": "Medium"
+  },
+  {
+    "Question Number": 74,
+    "Question": "What is a CDN (Content Delivery Network)?",
+    "Answer": "A CDN is a network of servers for delivering content efficiently to users based on geographic proximity, reducing latency and load times.",
+    "Category": "System Design",
+    "Difficulty": "Medium"
+  },
+  {
+    "Question Number": 75,
+    "Question": "Discuss the pros and cons of monolithic vs. microservices architecture.",
+    "Answer": "Monolithic is simple but less scalable; microservices offer scalability and flexibility but are complex to manage.",
+    "Category": "System Design",
+    "Difficulty": "Medium"
+  },
+  {
+    "Question Number": 76,
+    "Question": "What is a stateless vs. stateful service?",
+    "Answer": "Stateless services don't retain client data between requests; stateful services maintain client state, useful for sessions and transactions.",
+    "Category": "System Design",
+    "Difficulty": "Hard"
+  },
+  {
+    "Question Number": 77,
+    "Question": "Explain the concept of CAP theorem in distributed systems.",
+    "Answer": "The CAP theorem states that in a distributed system, you cannot simultaneously guarantee Consistency, Availability, and Partition Tolerance at all times.",
+    "Category": "System Design",
+    "Difficulty": "Easy"
+  },
+  {
+    "Question Number": 78,
+    "Question": "How do you ensure data consistency in a distributed database?",
+    "Answer": "Ensure consistency using strong consistency models, two-phase commits, optimistic concurrency control, and conflict resolution strategies.",
+    "Category": "System Design",
+    "Difficulty": "Hard"
+  },
+  {
+    "Question Number": 79,
+    "Question": "Describe the role of a reverse proxy in a web application.",
+    "Answer": "A reverse proxy routes client requests to appropriate servers, providing load balancing, SSL termination, caching, and security.",
+    "Category": "System Design",
+    "Difficulty": "Medium"
+  },
+  {
+    "Question Number": 80,
+    "Question": "What is a message broker, and when would you use one?",
+    "Answer": "A message broker facilitates communication in distributed systems through asynchronous messaging, used in event-driven architectures and high-volume scenarios.",
+    "Category": "System Design",
+    "Difficulty": "Medium"
+  },
+  {
+    "Question Number": 81,
+    "Question": "What is SQL injection, and how can it be prevented?",
+    "Answer": "SQL injection exploits vulnerabilities to execute malicious SQL. Prevent with parameterized queries, input validation, and least privilege access.",
+    "Category": "Security",
+    "Difficulty": "Medium"
+  },
+  {
+    "Question Number": 82,
+    "Question": "Explain the concept of Cross-Site Scripting (XSS).",
+    "Answer": "XSS injects malicious scripts into web apps, executed by users' browsers. Prevent with input validation, output encoding, and CSP.",
+    "Category": "Security",
+    "Difficulty": "Medium"
+  },
+  {
+    "Question Number": 83,
+    "Question": "What is two-factor authentication (2FA)?",
+    "Answer": "2FA adds extra security by requiring two verification forms: something known (password) and something possessed (device).",
+    "Category": "Security",
+    "Difficulty": "Hard"
+  },
+  {
+    "Question Number": 84,
+    "Question": "Describe the process of password hashing and salting.",
+    "Answer": "Hashing transforms passwords into hashes using algorithms; salting adds randomness, enhancing security against attacks.",
+    "Category": "Security",
+    "Difficulty": "Medium"
+  },
+  {
+    "Question Number": 85,
+    "Question": "What is OAuth, and how does it work?",
+    "Answer": "OAuth allows third-party app access to user data without exposing credentials, using access tokens for authorization.",
+    "Category": "Security",
+    "Difficulty": "Medium"
+  },
+  {
+    "Question Number": 86,
+    "Question": "How do you protect against session fixation attacks?",
+    "Answer": "Protect by regenerating session IDs post-authentication, using unpredictable IDs, and tying IDs to user authentication.",
+    "Category": "Security",
+    "Difficulty": "Medium"
+  },
+  {
+    "Question Number": 87,
+    "Question": "Explain the principles of least privilege and defense in depth.",
+    "Answer": "Least privilege limits access rights; defense in depth layers security. Both minimize attack surfaces and provide redundancy.",
+    "Category": "Security",
+    "Difficulty": "Hard"
+  },
+  {
+    "Question Number": 88,
+    "Question": "What is a DDoS (Distributed Denial of Service) attack?",
+    "Answer": "A DDoS attack overwhelms a target with traffic, causing unavailability. Mitigate with DDoS protection, rate limiting, and traffic analysis.",
+    "Category": "Security",
+    "Difficulty": "Medium"
+  },
+  {
+    "Question Number": 89,
+    "Question": "How can you secure sensitive data in a mobile app?",
+    "Answer": "Secure data by encrypting at rest and in transit, using secure authentication, and following best practices.",
+    "Category": "Security",
+    "Difficulty": "Medium"
+  },
+  {
+    "Question Number": 90,
+    "Question": "Discuss the importance of security in API design.",
+    "Answer": "API security is vital to protect data and prevent unauthorized access, using authentication, validation, rate limiting, and encryption.",
+    "Category": "Security",
+    "Difficulty": "Medium"
+  },
+  {
+    "Question Number": 91,
+    "Question": "What is Docker, and how does it work?",
+    "Answer": "Docker is a containerization platform packaging applications with dependencies, ensuring consistent environments across systems.",
+    "Category": "DevOps",
+    "Difficulty": "Medium"
+  },
+  {
+    "Question Number": 92,
+    "Question": "Explain the concept of container orchestration.",
+    "Answer": "Container orchestration automates deployment, scaling, and management of containers, optimizing resource use and handling failures.",
+    "Category": "DevOps",
+    "Difficulty": "Medium"
+  },
+  {
+    "Question Number": 93,
+    "Question": "What is Kubernetes, and why is it popular in container management?",
+    "Answer": "Kubernetes is an open-source container orchestration platform automating deployment and management, known for its scalability and community support.",
+    "Category": "DevOps",
+    "Difficulty": "Medium"
+  },
+  {
+    "Question Number": 94,
+    "Question": "Describe the process of continuous integration and continuous delivery (CI/CD).",
+    "Answer": "CI/CD automates build, test, and deployment processes, delivering code changes rapidly and reliably to production.",
+    "Category": "DevOps",
+    "Difficulty": "Hard"
+  },
+  {
+    "Question Number": 95,
+    "Question": "What is infrastructure as code (IaC)?",
+    "Answer": "IaC manages infrastructure using code, ensuring consistency, automation, and version control in deployments.",
+    "Category": "DevOps",
+    "Difficulty": "Easy"
+  },
+  {
+    "Question Number": 96,
+    "Question": "How do you monitor the performance of a web application?",
+    "Answer": "Monitor using tools to collect and analyze data on response times, resource utilization, error rates, and user experience.",
+    "Category": "DevOps",
+    "Difficulty": "Hard"
+  },
+  {
+    "Question Number": 97,
+    "Question": "Discuss the importance of automated testing in CI/CD pipelines.",
+    "Answer": "Automated testing in CI/CD ensures code changes are defect-free, enhancing reliability and speeding up delivery.",
+    "Category": "DevOps",
+    "Difficulty": "Medium"
+  },
+  {
+    "Question Number": 98,
+    "Question": "What is Blue-Green deployment, and when would you use it?",
+    "Answer": "Blue-Green deployment alternates between two production environments for easy rollbacks and minimal downtime during updates.",
+    "Category": "DevOps",
+    "Difficulty": "Medium"
+  },
+  {
+    "Question Number": 99,
+    "Question": "Explain the role of a configuration management tool like Ansible.",
+    "Answer": "Configuration management tools automate provisioning and management of software and infrastructure, ensuring consistency and efficiency.",
+    "Category": "DevOps",
+    "Difficulty": "Medium"
+  },
+  {
+    "Question Number": 100,
+    "Question": "Describe the benefits of using a cloud platform like AWS, Azure, or Google Cloud.",
+    "Answer": "Cloud platforms offer scalability, cost-efficiency, global reach, and managed services, reducing operational burdens with security and compliance features.",
+    "Category": "DevOps",
+    "Difficulty": "Medium"
+  }
+]

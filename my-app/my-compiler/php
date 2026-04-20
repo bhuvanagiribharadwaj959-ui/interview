@@ -1,0 +1,7 @@
+FROM php:8.2-cli-alpine
+WORKDIR /app
+
+# Alpine-based command
+RUN adduser -D coder
+
+USER coder
