@@ -181,6 +181,11 @@ export default function UdyogaprepEditor() {
   const [terminalOutput, setTerminalOutput] = useState<string>('');
   const [isRunning, setIsRunning] = useState(false);
   const [lastRunAssessment, setLastRunAssessment] = useState<{ status: string; detail: string } | null>(null);
+  
+  const [isSubmitModalOpen, setIsSubmitModalOpen] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitResults, setSubmitResults] = useState<any>(null);
+  
   const socketRef = useRef<WebSocket | null>(null);
   
   // Console resize state
@@ -278,7 +283,7 @@ export default function UdyogaprepEditor() {
           language: selectedLanguage,
           code: code,
           input: terminalInput || '',
-          testCases: problem.testCases || []
+          testCases: [] // Standard Run ignores test cases
         })
       });
 
@@ -288,21 +293,8 @@ export default function UdyogaprepEditor() {
         setTerminalOutput(prev => prev + (data.error || 'Execution failed') + '\n' + (data.output || ''));
         setLastRunAssessment({ status: 'runtime-error', detail: data.error });
       } else {
-        if (data.results) {
-           // It ran test cases
-           setTerminalOutput(prev => prev + `Ran ${data.totalCount} tests. Passed: ${data.passedCount}. Failed: ${data.failedCount}.\n`);
-           data.results.forEach((r: any) => {
-             setTerminalOutput(prev => prev + `Test ${r.name || r.id}: ${r.passed ? 'PASSED' : 'FAILED'}\n`);
-             if (!r.passed) {
-               setTerminalOutput(prev => prev + `Expected: ${r.expectedOutput}\nGot: ${r.actualOutput}\n`);
-             }
-           });
-           setLastRunAssessment({ status: data.status, detail: `Passed ${data.passedCount}/${data.totalCount} tests` });
-        } else {
-           // Normal execution
-           setTerminalOutput(prev => prev + (data.output || 'Execution completed successfully.') + '\n');
-           setLastRunAssessment({ status: 'accepted', detail: 'Execution completed' });
-        }
+        setTerminalOutput(prev => prev + (data.output || 'Execution completed successfully.') + '\n');
+        setLastRunAssessment({ status: 'accepted', detail: 'Execution completed' });
       }
     } catch (err) {
       setTerminalOutput(prev => prev + 'Error: Failed to connect to execution server.\n');
@@ -336,21 +328,49 @@ export default function UdyogaprepEditor() {
     setIsTerminalOpen(!isTerminalOpen);
   };
 
-  const handleSubmitCode = () => {
+  const handleSubmitCode = async () => {
+    setIsSubmitModalOpen(true);
+    setIsSubmitting(true);
+    setSubmitResults(null);
+    
+    try {
+      const res = await fetch('/api/execute_code', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          language: selectedLanguage,
+          code: code,
+          input: '',
+          testCases: problem.testCases || []
+        })
+      });
+
+      const data = await res.json();
+      setSubmitResults(data);
+      setLastRunAssessment({ 
+        status: data.status || 'runtime-error', 
+        detail: data.results ? `Passed ${data.passedCount}/${data.totalCount} tests` : (data.error || 'Execution failed')
+      });
+      
+    } catch (err) {
+      setSubmitResults({ error: 'Failed to connect to execution server.' });
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleFinalSubmit = () => {
     const submissionData = {
       code: code,
       language: selectedLanguage,
-      output: terminalOutput,
+      output: submitResults ? JSON.stringify(submitResults) : terminalOutput,
       questionTitle: problem.question,
       assessment: lastRunAssessment || { status: 'not-run', detail: 'Code submitted without running tests' },
       submittedAt: new Date().toISOString()
     };
     localStorage.setItem('interview_dsa_submission', JSON.stringify(submissionData));
     
-    // Close the current tab
     window.close();
-    
-    // Fallback if window.close is blocked by browser rules
     setTerminalOutput('Submission recorded! You can close this tab and return to the interview.\n');
   };
 
@@ -572,6 +592,91 @@ export default function UdyogaprepEditor() {
           </Panel>
         </PanelGroup>
       </main>
+
+      {/* Submit Solution Modal */}
+      {isSubmitModalOpen && (
+        <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 fade-in">
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[85vh] flex flex-col overflow-hidden">
+            <div className="px-6 py-4 border-b border-slate-100 flex justify-between items-center bg-slate-50">
+              <h2 className="text-lg font-bold text-slate-800">Test Case Evaluation</h2>
+              <button onClick={() => setIsSubmitModalOpen(false)} className="text-slate-400 hover:text-slate-600 transition-colors">
+                <svg width="24" height="24" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"/></svg>
+              </button>
+            </div>
+            
+            <div className="p-6 overflow-y-auto flex-1">
+              {isSubmitting ? (
+                 <div className="flex flex-col items-center justify-center py-12">
+                   <div className="animate-spin w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full mb-4"></div>
+                   <p className="text-slate-600 font-medium">Running code against {problem.testCases?.length || 0} test cases...</p>
+                 </div>
+              ) : submitResults?.error || submitResults?.executionError ? (
+                 <div className="p-4 bg-red-50 border border-red-100 rounded-xl">
+                   <h3 className="text-red-800 font-bold mb-2">Execution Error</h3>
+                   <pre className="text-red-600 text-sm whitespace-pre-wrap font-mono">{submitResults.error || submitResults.executionError}</pre>
+                 </div>
+              ) : submitResults?.results ? (
+                 <div className="space-y-4">
+                   <div className="flex justify-between items-center mb-6">
+                     <div className="text-slate-700 font-medium text-lg">
+                       Status: <span className={submitResults.status === 'accepted' ? 'text-green-600 font-bold' : 'text-red-600 font-bold'}>
+                         {submitResults.status === 'accepted' ? 'Accepted ✅' : 'Wrong Answer ❌'}
+                       </span>
+                     </div>
+                     <div className="text-slate-700 font-medium bg-slate-100 px-3 py-1 rounded-full">
+                       Passed: <span className="font-bold">{submitResults.passedCount} / {submitResults.totalCount}</span>
+                     </div>
+                   </div>
+                   
+                   {submitResults.results.map((r: any, idx: number) => (
+                     <div key={idx} className={`p-4 rounded-xl border transition-all ${r.passed ? 'bg-green-50/50 border-green-200' : 'bg-red-50/50 border-red-200'}`}>
+                       <div className="flex justify-between items-center mb-3">
+                         <span className={`font-bold text-sm tracking-wide uppercase ${r.passed ? 'text-green-700' : 'text-red-700'}`}>
+                           Test {r.name || r.id || (idx + 1)}: {r.passed ? 'PASSED' : 'FAILED'}
+                         </span>
+                       </div>
+                       {!r.passed && (
+                         <div className="space-y-3 mt-2 text-sm font-mono">
+                           <div className="p-3 bg-white rounded-lg border border-red-100 shadow-sm">
+                             <div className="text-slate-400 text-[11px] uppercase tracking-wider mb-1 font-sans font-bold">Input</div>
+                             <div className="text-slate-700 break-all">{r.input || '(no input)'}</div>
+                           </div>
+                           <div className="p-3 bg-white rounded-lg border border-red-100 shadow-sm">
+                             <div className="text-slate-400 text-[11px] uppercase tracking-wider mb-1 font-sans font-bold">Expected Output</div>
+                             <div className="text-green-600 break-all">{r.expectedOutput}</div>
+                           </div>
+                           <div className="p-3 bg-white rounded-lg border border-red-100 shadow-sm">
+                             <div className="text-slate-400 text-[11px] uppercase tracking-wider mb-1 font-sans font-bold">Actual Output</div>
+                             <div className="text-red-600 break-all">{r.actualOutput || '(empty output)'}</div>
+                           </div>
+                         </div>
+                       )}
+                     </div>
+                   ))}
+                 </div>
+              ) : (
+                 <div className="text-center text-slate-500 py-8 font-medium">No results to display.</div>
+              )}
+            </div>
+
+            <div className="px-6 py-4 border-t border-slate-100 bg-slate-50 flex justify-end gap-3">
+              <button 
+                onClick={() => setIsSubmitModalOpen(false)} 
+                className="px-5 py-2 text-slate-600 font-semibold hover:bg-slate-200 rounded-xl transition-colors"
+              >
+                Close
+              </button>
+              <button 
+                onClick={handleFinalSubmit}
+                disabled={isSubmitting}
+                className="px-6 py-2 bg-blue-600 text-white font-semibold hover:bg-blue-700 rounded-xl shadow-sm transition-all disabled:opacity-50 flex items-center gap-2"
+              >
+                Complete Interview <Check size={16} />
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
