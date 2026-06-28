@@ -3,13 +3,13 @@ import { getAuth, GoogleAuthProvider } from "firebase/auth";
 import { getFirestore } from "firebase/firestore";
 
 const firebaseConfig = {
-  apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY || "AIzaSyDummyKeyForVercelBuild1234567890",
-  authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN || "dummy.firebaseapp.com",
-  projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID || "dummy-project",
-  storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET || "dummy.appspot.com",
-  messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID || "123456789",
-  appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID || "1:123456789:web:abcdef",
-  measurementId: process.env.NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID || "G-DUMMY"
+  apiKey: "AIzaSyA8yJKbmeI4uF3DDfdOxlOYQGvBGIo2kVI",
+  authDomain: "interview-e752e.firebaseapp.com",
+  projectId: "interview-e752e",
+  storageBucket: "interview-e752e.firebasestorage.app",
+  messagingSenderId: "1004784786750",
+  appId: "1:1004784786750:web:9c0dfa4846f3a49f2ee06f",
+  measurementId: "G-VCPXFSWPQ2"
 };
 
 const app = getApps().length > 0 ? getApp() : initializeApp(firebaseConfig);
