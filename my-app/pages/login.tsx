@@ -56,7 +56,7 @@ export default function Login() {
       });
       
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error || 'Authentication failed');
+      if (!res.ok) throw new Error(data.message || data.error || 'Authentication failed');
       
       // Store token and redirect
       const redirectUrl = router.query.redirect ? String(router.query.redirect) : '/dashboard';
@@ -99,7 +99,7 @@ export default function Login() {
               })
             });
             const data = await res.json();
-            if (!res.ok) throw new Error(data.error || 'Server Google authentication failed');
+            if (!res.ok) throw new Error(data.message || data.error || 'Server Google authentication failed');
             
             if (data.token) {
                 localStorage.setItem('authToken', data.token);

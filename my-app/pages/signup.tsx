@@ -97,7 +97,7 @@ export default function Signup() {
               })
             });
             const data = await res.json();
-            if (!res.ok) throw new Error(data.error || 'Server Google authentication failed');
+            if (!res.ok) throw new Error(data.message || data.error || 'Server Google authentication failed');
             
             if (data.token) {
                 localStorage.setItem('authToken', data.token);
