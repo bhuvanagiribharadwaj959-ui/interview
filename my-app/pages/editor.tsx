@@ -24,7 +24,8 @@ const FALLBACK_PROBLEM = {
       output: 'false',
       explanation: 'The closing bracket does not match the most recent opening bracket.'
     }
-  ]
+  ],
+  testCases: [] as { id: string; name: string; input: string; expectedOutput: string }[]
 };
 
 const LANGUAGE_OPTIONS = [
@@ -217,7 +218,8 @@ export default function UdyogaprepEditor() {
           category: data.category || FALLBACK_PROBLEM.category,
           description: data.description || FALLBACK_PROBLEM.description,
           constraints: Array.isArray(data.constraints) ? data.constraints : FALLBACK_PROBLEM.constraints,
-          examples: Array.isArray(data.examples) && data.examples.length > 0 ? data.examples : FALLBACK_PROBLEM.examples
+          examples: Array.isArray(data.examples) && data.examples.length > 0 ? data.examples : FALLBACK_PROBLEM.examples,
+          testCases: Array.isArray(data.testCases) ? data.testCases : []
         });
       } catch (error) {
         console.error('Error loading DSA question:', error);
