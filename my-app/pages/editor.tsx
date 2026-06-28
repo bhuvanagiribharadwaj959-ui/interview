@@ -297,7 +297,7 @@ export default function UdyogaprepEditor() {
                setTerminalOutput(prev => prev + `Expected: ${r.expectedOutput}\nGot: ${r.actualOutput}\n`);
              }
            });
-           setLastRunAssessment({ status: data.status, detail: \`Passed \${data.passedCount}/\${data.totalCount} tests\` });
+           setLastRunAssessment({ status: data.status, detail: `Passed ${data.passedCount}/${data.totalCount} tests` });
         } else {
            // Normal execution
            setTerminalOutput(prev => prev + (data.output || 'Execution completed successfully.') + '\n');
