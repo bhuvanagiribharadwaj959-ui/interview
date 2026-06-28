@@ -1,4 +1,5 @@
-import { getDb } from '@/lib/mongodb';
+import { db } from '@/lib/firebaseClient';
+import { collection, query, where, getDocs, addDoc } from 'firebase/firestore';
 import { createAuthToken, normalizeEmail } from '@/lib/auth';
 
 export default async function handler(req, res) {
@@ -16,27 +17,34 @@ export default async function handler(req, res) {
       return res.status(400).json({ error: 'Email is required for Google login.' });
     }
 
-    const db = await getDb();
-    const users = db.collection('users');
+    const usersRef = collection(db, 'users');
+    const q = query(usersRef, where('email', '==', safeEmail));
+    const querySnapshot = await getDocs(q);
 
-    let userDoc = await users.findOne({ email: safeEmail });
-    if (!userDoc) {
+    let userDoc;
+    let userId;
+
+    if (querySnapshot.empty) {
       // Create user if they don't exist
-      const result = await users.insertOne({
+      const now = new Date();
+      const result = await addDoc(usersRef, {
         name: displayName || 'Google User',
         email: safeEmail,
         firebaseUid: uid,
-        createdAt: new Date(),
+        createdAt: now.toISOString(),
       });
+      userId = result.id;
       userDoc = {
-        _id: result.insertedId,
         name: displayName || 'Google User',
         email: safeEmail,
       };
+    } else {
+      userId = querySnapshot.docs[0].id;
+      userDoc = querySnapshot.docs[0].data();
     }
 
     const user = {
-      id: userDoc._id.toString(),
+      id: userId,
       name: userDoc.name,
       email: userDoc.email,
     };
@@ -51,3 +59,4 @@ export default async function handler(req, res) {
     });
   }
 }
+

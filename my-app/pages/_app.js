@@ -1,6 +1,7 @@
 import "../styles/globals.css";
 import "../styles/editor.css";
 import "../styles/interview.css";
+import "../styles/HeroPage.css";
 import { ThemeProvider } from "next-themes";
 
 export default function App({ Component, pageProps }) {

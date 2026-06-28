@@ -189,20 +189,17 @@ export default function Login() {
       <div className={styles['login-right-panel']}>
         
         <div className={styles['brand-header']}>
-           <div className={styles['brand-logo']}>
-            {/* Graduation cap icon on orange bg */}
-             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M22 10L12 5L2 10L12 15L22 10Z" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                <path d="M6 12V17C6 17.5523 12 19 12 19C12 19 18 17.5523 18 17V12" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                <line x1="12" y1="15" x2="12" y2="19" stroke="white" strokeWidth="2" strokeLinecap="round"/>
-             </svg>
-           </div>
-           <span className={styles['brand-name']}>udyogaprep</span>
+           <div className={styles['logo-icon']}></div>
+           <span className={styles['brand-name']}>Udyoga<span className={styles['logo-accent']}>PRP</span></span>
         </div>
 
         <div className={styles['right-panel-content']}>
             <div className={styles['visual-container']}>
-                <InterviewIllustration variant="login" />
+                <img 
+                  src="https://www.founditgulf.com/career-advice/wp-content/uploads/2023/11/Hirevue-Interview-Questions-1.jpg" 
+                  alt="Login Illustration" 
+                  style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '16px', boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.05)' }} 
+                />
             </div>
 
             <div className={styles['right-panel-text']}>

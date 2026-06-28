@@ -1,4 +1,5 @@
-import { getDb } from '@/lib/mongodb';
+import { db } from '@/lib/firebaseClient';
+import { collection, query, where, getDocs, addDoc } from 'firebase/firestore';
 import { createAuthToken, hashPassword, normalizeEmail } from '@/lib/auth';
 
 export default async function handler(req, res) {
@@ -24,30 +25,28 @@ export default async function handler(req, res) {
       return res.status(400).json({ error: 'Password must be at least 6 characters.' });
     }
 
-    const db = await getDb();
-    const users = db.collection('users');
+    const usersRef = collection(db, 'users');
+    const q = query(usersRef, where('email', '==', safeEmail));
+    const querySnapshot = await getDocs(q);
 
-    await users.createIndex({ email: 1 }, { unique: true });
-
-    const existingUser = await users.findOne({ email: safeEmail });
-    if (existingUser) {
+    if (!querySnapshot.empty) {
       return res.status(409).json({ error: 'User already exists with this email.' });
     }
 
     const passwordHash = await hashPassword(safePassword);
     const now = new Date();
 
-    const result = await users.insertOne({
+    const result = await addDoc(usersRef, {
       name: finalName,
       email: safeEmail,
       passwordHash,
-      createdAt: now,
-      updatedAt: now,
+      createdAt: now.toISOString(),
+      updatedAt: now.toISOString(),
       authProvider: 'email',
     });
 
     const user = {
-      id: result.insertedId.toString(),
+      id: result.id,
       name: finalName,
       email: safeEmail,
     };
@@ -56,13 +55,10 @@ export default async function handler(req, res) {
 
     return res.status(201).json({ message: 'Account created successfully.', user, token });
   } catch (error) {
-    if (error?.code === 11000) {
-      return res.status(409).json({ error: 'User already exists with this email.' });
-    }
-
     return res.status(500).json({
       error: 'Failed to create account.',
       message: error?.message || 'Unknown error',
     });
   }
 }
+

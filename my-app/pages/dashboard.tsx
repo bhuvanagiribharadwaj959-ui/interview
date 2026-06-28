@@ -126,19 +126,19 @@ export default function Dashboard() {
           </div>
           <nav className="flex-1 px-4 space-y-1">
             <p className="px-4 text-[10px] uppercase tracking-[0.15em] font-bold text-secondary mb-2">Menu</p>
-            <button onClick={() => setActiveView('dashboard')} className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all group ${activeView === 'dashboard' ? 'sidebar-active' : 'bg-transparent text-on-surface-variant hover:bg-surface-container'}`}>
+            <button onClick={() => setActiveView('dashboard')} className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all group ${activeView === 'dashboard' ? 'sidebar-active' : 'bg-transparent text-on-surface-variant hover:bg-[#d8e2ff] hover:text-[#0058be]'}`}>
               <span className="material-symbols-outlined">grid_view</span>
               <span className="font-headline text-sm">Dashboard</span>
             </button>
-            <a className="flex items-center gap-3 px-4 py-3 rounded-xl text-on-surface-variant hover:bg-surface-container transition-all group" href="/interview">
+            <a className="flex items-center gap-3 px-4 py-3 rounded-xl text-on-surface-variant hover:bg-[#d8e2ff] hover:text-[#0058be] transition-all group" href="/interview">
               <span className="material-symbols-outlined">mic</span>
               <span className="font-headline text-sm">Mock Interviews</span>
             </a>
-            <button onClick={() => setActiveView('history')} className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all group ${activeView === 'history' ? 'sidebar-active' : 'bg-transparent text-on-surface-variant hover:bg-surface-container'}`}>
+            <button onClick={() => setActiveView('history')} className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all group ${activeView === 'history' ? 'sidebar-active' : 'bg-transparent text-on-surface-variant hover:bg-[#d8e2ff] hover:text-[#0058be]'}`}>
                 <span className="material-symbols-outlined">history</span>
                 <span className="font-headline text-sm">History</span>
               </button>
-            <a className="flex items-center gap-3 px-4 py-3 rounded-xl text-on-surface-variant hover:bg-surface-container transition-all group" href="/editor">
+            <a className="flex items-center gap-3 px-4 py-3 rounded-xl text-on-surface-variant hover:bg-[#d8e2ff] hover:text-[#0058be] transition-all group" href="/editor">
               <span className="material-symbols-outlined">leaderboard</span>
               <span className="font-headline text-sm">Editor</span>
             </a>
@@ -147,7 +147,7 @@ export default function Dashboard() {
           <div className="p-4 m-4 bg-surface-container rounded-2xl">
             <p className="text-[10px] font-bold text-secondary mb-1 uppercase tracking-widest">Pro Plan</p>
             <p className="text-xs font-medium text-on-surface-variant mb-4">Unlock unlimited AI expert sessions.</p>
-            <button className="w-full py-2.5 bg-on-surface text-white text-xs font-bold rounded-xl hover:opacity-90 transition-all">Upgrade Now</button>
+            <button className="w-full py-2.5 bg-on-surface text-white text-xs font-bold rounded-xl hover:bg-[#0a66c2] transition-all">Upgrade Now</button>
           </div>
         </aside>
 
@@ -160,10 +160,10 @@ export default function Dashboard() {
             </div>
             <div className="flex items-center gap-6">
               <div className="flex items-center gap-1">
-                <button className="p-2 text-on-surface-variant hover:text-primary transition-all rounded-full hover:bg-surface-container bg-transparent">
+                <button className="p-2 text-on-surface-variant hover:text-[#0058be] transition-all rounded-full hover:bg-[#d8e2ff] bg-transparent">
                   <span className="material-symbols-outlined">search</span>
                 </button>
-                <button className="p-2 text-on-surface-variant hover:text-primary relative transition-all rounded-full hover:bg-surface-container bg-transparent">
+                <button className="p-2 text-on-surface-variant hover:text-[#0058be] relative transition-all rounded-full hover:bg-[#d8e2ff] bg-transparent">
                   <span className="material-symbols-outlined">notifications</span>
                   <span className="absolute top-2 right-2 size-2 bg-tertiary rounded-full border-2 border-background"></span>
                 </button>
@@ -344,7 +344,7 @@ export default function Dashboard() {
                  <div className="flex flex-col gap-6">
                     <button 
                       onClick={() => setExpandedInterviewId(null)}
-                      className="flex items-center gap-2 text-primary font-bold hover:underline mb-4 w-fit"
+                      className="flex items-center gap-2 text-primary font-bold hover:bg-[#d8e2ff] hover:text-[#0058be] px-3 py-1 rounded-lg transition-all mb-4 w-fit"
                     >
                         <span className="material-symbols-outlined">arrow_back</span>
                         Back to History
@@ -415,7 +415,7 @@ export default function Dashboard() {
                           }
                         }
                       }}
-                      className="px-4 py-2 rounded-lg bg-red-50 text-red-600 font-bold text-sm hover:bg-red-100 transition-all flex items-center gap-2 shadow-sm"
+                      className="px-4 py-2 rounded-lg bg-red-50 text-red-600 font-bold text-sm hover:bg-[#d8e2ff] hover:text-[#0058be] transition-all flex items-center gap-2 shadow-sm"
                     >
                       <span className="material-symbols-outlined text-lg">delete</span>
                       <span>Erase All Data</span>
@@ -480,7 +480,7 @@ export default function Dashboard() {
                                      </div>
                                      <button 
                                          onClick={() => setExpandedInterviewId(interview._id)}
-                                         className="px-4 py-2 rounded-lg bg-primary text-white font-bold text-sm hover:bg-primary/90 transition-all flex items-center gap-2 ml-auto shadow-sm"
+                                         className="px-4 py-2 rounded-lg bg-primary text-white font-bold text-sm hover:bg-[#0a66c2] transition-all flex items-center gap-2 ml-auto shadow-sm"
                                      >
                                          <span className="material-symbols-outlined text-lg">visibility</span>
                                          <span>View Chat</span>

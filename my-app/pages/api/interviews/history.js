@@ -1,4 +1,5 @@
-import { getDb } from '@/lib/mongodb';
+import { db } from '@/lib/firebaseClient';
+import { collection, query, where, orderBy, getDocs } from 'firebase/firestore';
 import { verifyAuthToken } from '@/lib/auth';
 
 export default async function handler(req, res) {
@@ -20,18 +21,35 @@ export default async function handler(req, res) {
   const userId = decoded.id;
 
   try {
-    const db = await getDb();
-    const interviewsCollection = db.collection('interviews');
-
-    // Fetch all interviews for this user
-    const interviews = await interviewsCollection
-      .find({ userId: userId })
-      .sort({ startTime: -1, date: -1 }) // Sort by startTime or date descending
-      .toArray();
+    const interviewsRef = collection(db, 'interviews');
+    const q = query(
+      interviewsRef,
+      where('userId', '==', userId),
+      orderBy('startTime', 'desc')
+    );
+    
+    const querySnapshot = await getDocs(q);
+    const interviews = querySnapshot.docs.map(doc => ({
+      _id: doc.id,
+      ...doc.data()
+    }));
 
     return res.status(200).json(interviews);
   } catch (error) {
     console.error('Error fetching interview history:', error);
-    return res.status(500).json({ error: 'Internal Server Error' });
+    // Fallback if index doesn't exist for orderBy
+    try {
+      const interviewsRef = collection(db, 'interviews');
+      const q = query(interviewsRef, where('userId', '==', userId));
+      const querySnapshot = await getDocs(q);
+      const interviews = querySnapshot.docs.map(doc => ({
+        _id: doc.id,
+        ...doc.data()
+      })).sort((a, b) => new Date(b.startTime || 0) - new Date(a.startTime || 0));
+      return res.status(200).json(interviews);
+    } catch (e) {
+      return res.status(500).json({ error: 'Internal Server Error' });
+    }
   }
 }
+

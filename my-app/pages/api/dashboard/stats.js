@@ -1,4 +1,5 @@
-import { getDb } from '@/lib/mongodb';
+import { db } from '@/lib/firebaseClient';
+import { collection, query, where, getDocs } from 'firebase/firestore';
 import { verifyAuthToken } from '@/lib/auth';
 
 export default async function handler(req, res) {
@@ -22,11 +23,17 @@ export default async function handler(req, res) {
   const userName = decoded.name || 'Student'; // Add user name to response, fallback to Student
 
   try {
-    const db = await getDb();
-    const interviewsCollection = db.collection('interviews');
+    const interviewsRef = collection(db, 'interviews');
+    const q = query(interviewsRef, where('userId', '==', userId));
+    const querySnapshot = await getDocs(q);
 
     // Fetch all interviews for this user
-    const interviews = await interviewsCollection.find({ userId: userId }).sort({ date: -1 }).toArray();
+    let interviews = querySnapshot.docs.map(doc => ({
+      _id: doc.id,
+      ...doc.data()
+    }));
+    
+    interviews.sort((a, b) => new Date(b.date || b.startTime || 0) - new Date(a.date || a.startTime || 0));
 
     // Default zero state
     const stats = {
@@ -128,7 +135,7 @@ export default async function handler(req, res) {
 
        // Streak calculation (simple logic)
         // Sort by date descending
-        const sortedDates = interviews.map(i => new Date(i.date).toDateString());
+        const sortedDates = interviews.map(i => new Date(i.startTime || i.date).toDateString());
         const uniqueDates = [...new Set(sortedDates)];
         
         let streak = 0;
@@ -163,3 +170,4 @@ export default async function handler(req, res) {
     return res.status(500).json({ error: 'Internal Server Error' });
   }
 }
+

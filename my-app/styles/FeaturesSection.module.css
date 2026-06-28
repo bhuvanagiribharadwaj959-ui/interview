@@ -1,7 +1,9 @@
 .section {
   width: 100%;
-  background-color: #f8fafc;
-  padding: 80px 40px;
+  background-color: var(--surface-color, #0f172a);
+  padding: 100px 40px;
+  position: relative;
+  z-index: 10;
 }
 
 .container {
@@ -11,21 +13,22 @@
 
 .headingBlock {
   text-align: center;
-  margin-bottom: 60px;
+  margin-bottom: 80px;
 }
 
 .title {
-  font-family: 'Sora', sans-serif;
-  font-size: 42px;
-  font-weight: 700;
-  color: #0f172a;
-  margin-bottom: 16px;
-  line-height: 1.2;
+  font-family: 'Inter', 'Sora', sans-serif;
+  font-size: 48px;
+  font-weight: 800;
+  color: #f8fafc;
+  margin-bottom: 24px;
+  line-height: 1.1;
+  letter-spacing: -1px;
 }
 
 .subtitle {
-  font-size: 16px;
-  color: #64748b;
+  font-size: 18px;
+  color: #94a3b8;
   max-width: 600px;
   margin: 0 auto;
   line-height: 1.6;
@@ -34,18 +37,18 @@
 .grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 24px;
+  gap: 32px;
 }
 
-/* Animations */
-@keyframes fadeUp {
-  from {
-    opacity: 0;
-    transform: translateY(24px);
+@media (max-width: 1024px) {
+  .grid {
+    grid-template-columns: repeat(2, 1fr);
   }
-  to {
-    opacity: 1;
-    transform: translateY(0);
+}
+
+@media (max-width: 768px) {
+  .grid {
+    grid-template-columns: 1fr;
   }
 }
 
@@ -55,32 +58,29 @@
 }
 
 .cardContainer {
-  /* Using a container for the animation to separate it from the card's visual transforms */
-  /* animation: fadeUp 0.6s ease-out both;  <-- Removed to let Framer Motion handle it */
 }
 
 .card {
   position: relative;
-  border-radius: 16px;
-  background: #e2e8f0; /* Default static border color */
-  padding: 32px;
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.05); /* 5% opacity black */
+  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.05); /* Default static border color */
+  padding: 40px;
   height: 100%;
   display: flex;
   flex-direction: column;
   transition: transform 0.3s ease, box-shadow 0.3s ease;
-  overflow: hidden; /* Clips the rotating gradient */
-  border: none; /* Removed standard border to use pseudo-element method */
+  overflow: hidden;
+  border: none;
   z-index: 1;
 }
 
-/* The card's white background */
+/* The card's dark background */
 .card::after {
   content: "";
   position: absolute;
-  inset: 1px; /* 1px border width */
-  background: white;
-  border-radius: 15px; /* 16px - 1px */
+  inset: 1px;
+  background: #020617;
+  border-radius: 19px;
   z-index: -1;
 }
 
@@ -90,16 +90,16 @@
   position: absolute;
   top: 50%;
   left: 50%;
-  width: 200vmax; /* Large enough to cover the card during rotation */
+  width: 200vmax;
   height: 200vmax;
   background: conic-gradient(
     from 0deg,
     transparent 0deg,
     transparent 80deg,
-    #2563EB 100deg,   /* Blue */
-    #9333ea 140deg,   /* Purple */
-    #06b6d4 180deg,   /* Cyan */
-    #2563EB 220deg,   /* Back to Blue */
+    #3b82f6 100deg,   /* Blue */
+    #8b5cf6 140deg,   /* Purple */
+    #38bdf8 180deg,   /* Light Blue */
+    #3b82f6 220deg,   /* Back to Blue */
     transparent 360deg
   );
   transform: translate(-50%, -50%);
@@ -114,18 +114,23 @@
 }
 
 .cardElevated {
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.10); /* 10% opacity black */
-  transform: scale(1.02);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+  transform: translateY(-8px);
+}
+
+.card:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
 }
 
 .iconChip {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  border-radius: 8px;
-  padding: 6px 12px;
+  border-radius: 12px;
+  padding: 12px;
   margin-bottom: 24px;
-  font-size: 20px; /* Adjusted icon size for visibility */
+  font-size: 24px;
   font-weight: 600;
   font-family: inherit; 
   align-self: flex-start;
@@ -133,16 +138,17 @@
 }
 
 .cardTitle {
-  font-size: 20px;
+  font-size: 22px;
   font-weight: 700;
-  color: #0f172a;
-  margin-bottom: 8px;
+  color: #f8fafc;
+  margin-bottom: 12px;
   margin-top: 0;
 }
 
 .cardDesc {
-  font-size: 15px;
-  color: #64748b;
+  font-size: 16px;
+  color: #94a3b8;
   line-height: 1.6;
   margin: 0;
 }
+

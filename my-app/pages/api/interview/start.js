@@ -1,4 +1,5 @@
-import { getDb } from '@/lib/mongodb';
+import { db } from '@/lib/firebaseClient';
+import { collection, addDoc } from 'firebase/firestore';
 import { verifyAuthToken } from '@/lib/auth';
 
 export default async function handler(req, res) {
@@ -21,12 +22,11 @@ export default async function handler(req, res) {
   const { type, difficulty } = req.body;
 
   try {
-    const db = await getDb();
-    const interviewsCollection = db.collection('interviews');
+    const interviewsRef = collection(db, 'interviews');
 
     const newInterview = {
       userId,
-      startTime: new Date(),
+      startTime: new Date().toISOString(),
       type: type || 'Mock Interview',
       difficulty: difficulty || 'Medium',
       status: 'in-progress',
@@ -40,11 +40,11 @@ export default async function handler(req, res) {
       duration: '0 min'
     };
 
-    const result = await interviewsCollection.insertOne(newInterview);
+    const result = await addDoc(interviewsRef, newInterview);
     
     return res.status(200).json({ 
       success: true, 
-      interviewId: result.insertedId.toString() 
+      interviewId: result.id 
     });
 
   } catch (err) {
@@ -52,3 +52,4 @@ export default async function handler(req, res) {
     return res.status(500).json({ error: 'Internal Server Error' });
   }
 }
+

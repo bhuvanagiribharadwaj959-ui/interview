@@ -24,8 +24,8 @@
 /* Right Panel - now the Visual/Dark side */
 .login-right-panel {
   flex: 1;
-  background-color: #0d1117; /* Darker navy/black */
-  color: white;
+  background-color: #f3f2ef; /* LinkedIn light background */
+  color: #191919;
   position: relative;
   display: flex;
   flex-direction: column;
@@ -46,20 +46,34 @@
   z-index: 10;
 }
 
-.brand-logo {
-  width: 36px;
-  height: 36px;
-  background-color: #e05a1a;
+.logo-icon {
+  width: 28px;
+  height: 28px;
+  background-color: #0a66c2;
   border-radius: 8px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  position: relative;
+}
+
+.logo-icon::after {
+  content: '';
+  position: absolute;
+  width: 12px;
+  height: 12px;
+  background: white;
+  border-radius: 4px;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.logo-accent {
+  color: #0a66c2;
 }
 
 .brand-name {
   font-weight: 700;
   font-size: 1.25rem;
-  color: white;
+  color: #0a66c2;
 }
 
 /* Middle Content Wrapper for Right Panel */
@@ -96,12 +110,12 @@
   font-weight: 700;
   margin-bottom: 1rem;
   line-height: 1.1;
-  color: white;
+  color: #191919;
 }
 
 .right-panel-text p {
   font-size: 1.1rem;
-  color: #9ca3af; /* Tailwind gray-400 */
+  color: #666666;
   line-height: 1.6;
 }
 
@@ -190,8 +204,8 @@
 
 .form-input:focus {
   outline: none;
-  border-color: #e05a1a;
-  box-shadow: 0 0 0 3px rgba(224, 90, 26, 0.1);
+  border-color: #0a66c2;
+  box-shadow: 0 0 0 3px rgba(10, 102, 194, 0.1);
 }
 
 .password-toggle {
@@ -220,7 +234,7 @@
 }
 
 .password-helper a {
-  color: #e05a1a;
+  color: #0a66c2;
   text-decoration: none;
   font-weight: 500;
 }
@@ -239,7 +253,7 @@
 .checkbox-input {
   width: 18px;
   height: 18px;
-  accent-color: #e05a1a;
+  accent-color: #0a66c2;
   cursor: pointer;
 }
 
@@ -253,7 +267,7 @@
 
 .cta-button {
   width: 100%;
-  background-color: #f25b19; /* Brighter orange from 2nd image */
+  background-color: #0a66c2; 
   color: white;
   border: none;
   padding: 16px;
@@ -269,9 +283,9 @@
 }
 
 .cta-button:hover {
-  background-color: #e05216;
+  background-color: #004182;
   transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(242, 91, 25, 0.3);
+  box-shadow: 0 4px 12px rgba(10, 102, 194, 0.3);
 }
 
 .cta-button:active {
@@ -343,7 +357,7 @@
 }
 
 .bottom-helper a {
-  color: #e05a1a;
+  color: #0a66c2;
   text-decoration: none;
   font-weight: 600;
   margin-left: 4px;

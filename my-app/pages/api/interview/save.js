@@ -1,6 +1,6 @@
-import { getDb } from '@/lib/mongodb';
+import { db } from '@/lib/firebaseClient';
+import { collection, doc, updateDoc, addDoc, getDoc } from 'firebase/firestore';
 import { verifyAuthToken } from '@/lib/auth';
-import { ObjectId } from 'mongodb';
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
@@ -43,47 +43,43 @@ export default async function handler(req, res) {
   }
 
   try {
-    const db = await getDb();
-    const interviewsCollection = db.collection('interviews');
-
     if (interviewId) {
       // Update existing interview
-      const filter = { _id: new ObjectId(interviewId), userId: userId };
-      const update = {
-        $set: {
-          endTime: new Date(),
-          duration: duration || '0 min',
-          status: 'completed',
-          readinessScore,
-          vocabularyScore,
-          communicationScore,
-          technicalScore,
-          confidenceScore,
-          logicScore,
-          rating,
-          feedback,
-          transcript,
-          codingEvents: Array.isArray(codingEvents) ? codingEvents : [],
-          startedAt: startedAt ? new Date(startedAt) : undefined,
-          endedAt: endedAt ? new Date(endedAt) : new Date(),
-        },
-      };
+      const interviewRef = doc(db, 'interviews', interviewId);
+      const interviewSnap = await getDoc(interviewRef);
 
-      const result = await interviewsCollection.updateOne(filter, update);
-
-      if (result.matchedCount === 0) {
+      if (!interviewSnap.exists() || interviewSnap.data().userId !== userId) {
         return res
           .status(404)
           .json({ error: 'Interview not found or not owned by user' });
       }
 
+      await updateDoc(interviewRef, {
+        endTime: new Date().toISOString(),
+        duration: duration || '0 min',
+        status: 'completed',
+        readinessScore,
+        vocabularyScore,
+        communicationScore,
+        technicalScore,
+        confidenceScore,
+        logicScore,
+        rating,
+        feedback,
+        transcript,
+        codingEvents: Array.isArray(codingEvents) ? codingEvents : [],
+        startedAt: startedAt ? new Date(startedAt).toISOString() : null,
+        endedAt: endedAt ? new Date(endedAt).toISOString() : new Date().toISOString(),
+      });
+
       return res.status(200).json({ success: true, interviewId });
     } else {
       // Create new interview (legacy behavior)
+      const interviewsRef = collection(db, 'interviews');
       const interviewData = {
         userId,
-        startTime: new Date(),
-        endTime: new Date(),
+        startTime: new Date().toISOString(),
+        endTime: new Date().toISOString(),
         type: type || 'Mock Interview',
         difficulty: difficulty || 'Medium',
         duration: duration || '0 min',
@@ -104,17 +100,18 @@ export default async function handler(req, res) {
         feedback,
         transcript,
         codingEvents: Array.isArray(codingEvents) ? codingEvents : [],
-        startedAt: startedAt ? new Date(startedAt) : new Date(),
-        endedAt: endedAt ? new Date(endedAt) : new Date(),
+        startedAt: startedAt ? new Date(startedAt).toISOString() : new Date().toISOString(),
+        endedAt: endedAt ? new Date(endedAt).toISOString() : new Date().toISOString(),
       };
 
-      const result = await interviewsCollection.insertOne(interviewData);
+      const result = await addDoc(interviewsRef, interviewData);
       return res
         .status(201)
-        .json({ message: 'Interview saved', id: result.insertedId });
+        .json({ message: 'Interview saved', id: result.id });
     }
   } catch (error) {
     console.error('Error saving interview:', error);
     return res.status(500).json({ error: 'Internal Server Error' });
   }
 }
+

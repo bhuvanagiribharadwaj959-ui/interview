@@ -1,4 +1,5 @@
-import { getDb } from '@/lib/mongodb';
+import { db } from '@/lib/firebaseClient';
+import { collection, query, where, getDocs } from 'firebase/firestore';
 import { createAuthToken, normalizeEmail, verifyPassword } from '@/lib/auth';
 
 export default async function handler(req, res) {
@@ -17,23 +18,26 @@ export default async function handler(req, res) {
       return res.status(400).json({ error: 'Email and password are required.' });
     }
 
-    const db = await getDb();
-    const users = db.collection('users');
+    const usersRef = collection(db, 'users');
+    const q = query(usersRef, where('email', '==', safeEmail));
+    const querySnapshot = await getDocs(q);
 
-    const userDoc = await users.findOne({ email: safeEmail });
-    if (!userDoc) {
+    if (querySnapshot.empty) {
       return res.status(401).json({ error: 'Invalid email or password.' });
     }
 
-    const isValidPassword = await verifyPassword(safePassword, userDoc.passwordHash);
+    const userDoc = querySnapshot.docs[0];
+    const userData = userDoc.data();
+
+    const isValidPassword = await verifyPassword(safePassword, userData.passwordHash);
     if (!isValidPassword) {
       return res.status(401).json({ error: 'Invalid email or password.' });
     }
 
     const user = {
-      id: userDoc._id.toString(),
-      name: userDoc.name,
-      email: userDoc.email,
+      id: userDoc.id,
+      name: userData.name,
+      email: userData.email,
     };
 
     const token = createAuthToken(user);
@@ -46,3 +50,4 @@ export default async function handler(req, res) {
     });
   }
 }
+

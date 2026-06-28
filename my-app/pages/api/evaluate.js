@@ -1,49 +1,36 @@
-import fs from 'fs';
-import path from 'path';
-
-async function findRunningModelServer() {
-  // 1. Check ENV for external Colab URL
-  const envUrl = process.env.INTERVIEW_MODEL_URL;
-  if (envUrl) {
-    try {
-      const checkUrl = envUrl.replace('/v1/ask', '') + '/health';
-      const resp = await fetch(checkUrl, { 
-        method: 'GET', 
-        headers: { 'ngrok-skip-browser-warning': '1' },
-      }).catch(() => null);
-      if (resp && resp.ok) {
-        return envUrl.endsWith('/v1/ask') ? envUrl : `${envUrl}/v1/ask`;
-      }
-    } catch (e) {}
-  }
-
-  // 2. Check Local File
-  try {
-    const portFile = path.join(process.cwd(), 'interview_model_port.txt');
-    if (fs.existsSync(portFile)) {
-      const port = fs.readFileSync(portFile, 'utf8').trim();
-      if (port) {
-        return `http://127.0.0.1:${port}/v1/ask`;
-      }
-    }
-  } catch (e) {}
-  
-  for (let port = 8090; port <= 8100; port++) {
-    try {
-      const url = `http://127.0.0.1:${port}/health`;
-      const resp = await fetch(url, { method: 'GET', signal: AbortSignal.timeout(500) }).catch(() => null);
-      if (resp && resp.ok) return `http://127.0.0.1:${port}/v1/ask`;
-    } catch (e) {}
-  }
-  return null;
-}
-
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
   const { transcript, type, difficulty } = req.body;
+
+  if (!transcript || !Array.isArray(transcript)) {
+    return res.status(400).json({ error: 'Invalid transcript' });
+  }
+
+  // Check how much the candidate actually spoke
+  const candidateWords = transcript
+    .filter(m => m.role === 'user' || m.role === 'candidate')
+    .map(m => m.content)
+    .join(' ')
+    .trim()
+    .split(/\s+/)
+    .filter(w => w.length > 0).length;
+
+  // If the candidate said essentially nothing, fail them immediately
+  if (candidateWords < 5) {
+    return res.status(200).json({
+      readinessScore: 0,
+      vocabularyScore: 0,
+      communicationScore: 0,
+      technicalScore: 0,
+      confidenceScore: 0,
+      logicScore: 0,
+      feedback: "The interview ended prematurely or the candidate did not provide substantial responses.",
+      rating: "Needs Work"
+    });
+  }
 
   let conversationText = transcript.map(m => `${m.role === 'assistant' || m.role === 'ai' ? 'Interviewer' : 'Candidate'}: ${m.content}`).join('\n');
 
@@ -64,70 +51,76 @@ Please evaluate the candidate strictly and return ONLY a JSON object with the fo
   "rating": "<string: Excellent, Good, Fair, Poor, or Needs Work>"
 }
 
-Do not include markdown blocks, do not include any other text except the JSON.`;
+CRITICAL RULES:
+1. If the candidate struggled, gave wrong answers, or spoke very little, score them VERY harshly (e.g., scores under 30, vocab 1-3).
+2. Do not inflate scores. Be a realistic, top-tier tech company interviewer.
+3. Return ONLY valid JSON. Do not include markdown blocks like \`\`\`json.`;
 
-  const url = await findRunningModelServer();
-  
-  if (!url) {
-    console.warn("[Evaluate] Model server not found. Returning fallback scores.");
-    return res.status(200).json(generateFallbackScores(transcript));
+  const groqKey = process.env.GROQ_KEY;
+  if (!groqKey) {
+    return res.status(200).json(generateFallbackScores(candidateWords));
   }
 
   try {
-    const askRes = await fetch(url, {
+    const askRes = await fetch('https://api.groq.com/openai/v1/chat/completions', {
       method: 'POST',
-      headers: { 
+      headers: {
         'Content-Type': 'application/json',
-        'ngrok-skip-browser-warning': '1'
+        'Authorization': `Bearer ${groqKey}`
       },
       body: JSON.stringify({
-        question: "Evaluate the interview transcript and return the JSON object.",
-        system_prompt: systemPrompt,
-        max_new_tokens: 300,
-        temperature: 0.2 // low temp for stricter, more consistent json
+        model: 'llama-3.3-70b-versatile',
+        messages: [
+          { role: 'system', content: systemPrompt },
+          { role: 'user', content: 'Evaluate the interview transcript and return the JSON object.' }
+        ],
+        max_tokens: 300,
+        temperature: 0.1
       })
     });
     
     const data = await askRes.json();
     
+    if (data.error) {
+      console.error("Groq evaluation error:", data.error);
+      return res.status(200).json(generateFallbackScores(candidateWords));
+    }
+
     let parsedData = null;
     try {
-      // Find JSON bounds in case the model wraps it with text or codeblocks
-      const reply = data.reply;
+      const reply = data.choices[0].message.content.trim();
       const jsonMatch = reply.match(/\{[\s\S]*\}/);
       if (jsonMatch) {
          parsedData = JSON.parse(jsonMatch[0]);
       }
     } catch(e) {
-      console.error("Failed to parse evaluation JSON:", data.reply);
+      console.error("Failed to parse evaluation JSON:", data.choices?.[0]?.message?.content);
     }
     
-    if (parsedData && parsedData.readinessScore) {
+    if (parsedData && parsedData.readinessScore !== undefined) {
        return res.status(200).json(parsedData);
     }
 
-    return res.status(200).json(generateFallbackScores(transcript));
+    return res.status(200).json(generateFallbackScores(candidateWords));
 
   } catch (e) {
     console.error("Evaluation API fetch error:", e);
-    return res.status(200).json(generateFallbackScores(transcript));
+    return res.status(200).json(generateFallbackScores(candidateWords));
   }
 }
 
-function generateFallbackScores(transcript) {
-  // Deterministic fallback based on transcript to avoid randomized graphs
-  const textBody = transcript.map(t => t.content).join(' ');
-  const wordCount = textBody.split(/\s+/).length || 10;
-  const base = Math.min(100, Math.max(40, wordCount));
+function generateFallbackScores(wordCount) {
+  // If the Groq API fails, we use a harsh fallback based on word count
+  const base = Math.min(50, Math.max(10, wordCount));
 
   return {
-    readinessScore: Math.min(100, base + (textBody.length % 10)),
-    vocabularyScore: Math.min(10, Math.floor(base / 10) + (textBody.length % 3)),
-    communicationScore: Math.min(100, base + 5),
-    technicalScore: Math.min(100, base - 5),
-    confidenceScore: Math.min(100, base + (wordCount % 15)),
-    logicScore: Math.min(100, base + (textBody.length % 5)),
-    feedback: "The interview was evaluated locally. Try providing more detailed answers.",
-    rating: base > 70 ? "Good" : "Fair"
+    readinessScore: base,
+    vocabularyScore: Math.floor(base / 10),
+    communicationScore: base + 5,
+    technicalScore: Math.max(0, base - 10),
+    confidenceScore: base,
+    logicScore: base,
+    feedback: "The evaluation API encountered an error. This is a fallback score based on transcript length.",
+    rating: base > 40 ? "Fair" : "Needs Work"
   };
 }

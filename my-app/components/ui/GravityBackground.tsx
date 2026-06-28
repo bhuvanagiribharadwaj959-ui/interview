@@ -149,7 +149,7 @@ const GravityBackground = () => {
   }, []);
 
   return (
-    <div 
+          <div 
         ref={containerRef} 
         style={{ 
             position: 'absolute', 
@@ -160,7 +160,7 @@ const GravityBackground = () => {
             zIndex: -1, 
             overflow: 'hidden',
             pointerEvents: 'none',
-            backgroundColor: '#f8fafc'
+            backgroundColor: 'transparent'
         }}
     >
       <canvas ref={canvasRef} />
