@@ -1,4 +1,4 @@
-﻿@tailwind base;
+@tailwind base;
 @tailwind components;
 @tailwind utilities;
 
@@ -117,73 +117,7 @@ code, pre {
   background: var(--vscode-input);
 }
 
-/* Button styles */
-button {
-  background-color: var(--vscode-button);
-  color: var(--vscode-text);
-  border: none;
-  padding: 8px 16px;
-  border-radius: 4px;
-  cursor: pointer;
-  font-size: 14px;
-  transition: background-color 0.2s ease;
-}
 
-button:hover {
-  background-color: var(--vscode-button-hover);
-}
-
-button:active {
-  background-color: var(--vscode-focus);
-}
-
-/* Input styles */
-input, textarea, select {
-  background-color: var(--vscode-input);
-  color: var(--vscode-text);
-  border: 1px solid var(--vscode-editor);
-  padding: 8px 12px;
-  border-radius: 4px;
-  font-size: 14px;
-  transition: border-color 0.2s ease;
-}
-
-input:focus, textarea:focus, select:focus {
-  outline: none;
-  border-color: var(--vscode-focus);
-  box-shadow: 0 0 0 2px var(--vscode-focus);
-}
-
-/* Link styles */
-a {
-  color: var(--vscode-keyword);
-  text-decoration: none;
-  transition: color 0.2s ease;
-}
-
-a:hover {
-  color: var(--vscode-function);
-  text-decoration: underline;
-}
-
-/* Selection styles */
-::selection {
-  background-color: var(--vscode-focus);
-  color: var(--vscode-text);
-}
-/* Heading styles */
-h1, h2, h3, h4, h5, h6 {
-  color: var(--vscode-text-lighter);
-  font-weight: 600;
-  margin-bottom: 1rem;
-}
-
-h1 { font-size: 2rem; }
-h2 { font-size: 1.75rem; }
-h3 { font-size: 1.5rem; }
-h4 { font-size: 1.25rem; }
-h5 { font-size: 1.1rem; }
-h6 { font-size: 1rem; }
 
 /* Professional card styles */
 .card, .card-container {
