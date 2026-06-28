@@ -78,6 +78,23 @@ export default function Signup() {
       try {
         const result = await signInWithPopup(auth, googleProvider);
         if (result.user) {
+            // After successful Firebase Google auth, authenticate with our own backend
+            const res = await fetch('/api/auth/google', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                 email: result.user.email,
+                 displayName: result.user.displayName,
+                 uid: result.user.uid
+              })
+            });
+            const data = await res.json();
+            if (!res.ok) throw new Error(data.error || 'Server Google authentication failed');
+            
+            if (data.token) {
+                localStorage.setItem('authToken', data.token);
+            }
+            
             window.location.href = '/dashboard';
         }
       } catch (err: any) {
