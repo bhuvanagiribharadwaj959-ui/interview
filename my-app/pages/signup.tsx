@@ -3,7 +3,7 @@ import Head from 'next/head';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
 import { User, Mail, Lock, Eye, EyeOff } from 'lucide-react';
-import { signInWithPopup } from 'firebase/auth';
+import { signInWithPopup, createUserWithEmailAndPassword, sendEmailVerification, updateProfile } from 'firebase/auth';
 import { auth, googleProvider } from '../lib/firebaseClient';
 import styles from '../styles/SignUp.module.css';
 import InterviewIllustration from '../components/ui/InterviewIllustration';
@@ -21,9 +21,6 @@ export default function Signup() {
   const [showPassword, setShowPassword] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState('');
-
-  // Refs for interactions - REMOVED
-
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -44,31 +41,42 @@ export default function Signup() {
     setError('');
 
     try {
-      const res = await fetch('/api/auth/signup', {
+      // 1. Create user in Firebase Auth
+      const userCredential = await createUserWithEmailAndPassword(auth, formData.email, formData.password);
+      const user = userCredential.user;
+
+      // 2. Update display name in Firebase Auth
+      await updateProfile(user, { displayName: formData.name });
+
+      // 3. Send email verification
+      await sendEmailVerification(user);
+
+      // 4. Register user on the backend
+      await fetch('/api/auth/session', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({
-           name: formData.name,
            email: formData.email,
-           password: formData.password 
+           displayName: formData.name,
+           uid: user.uid
         })
       });
-      
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || 'Signup failed');
-      
-      // Auto login or redirect
-      if (data.token) {
-          localStorage.setItem('authToken', data.token);
-          window.location.href = '/dashboard';
-      } else {
-          router.push('/login');
-      }
+
+      // 5. Redirect to verify-email
+      router.push('/verify-email');
 
     } catch (err: any) {
-      setError(err.message);
+      let friendlyError = err.message;
+      if (err.code === 'auth/email-already-in-use') {
+        friendlyError = 'An account already exists with this email address.';
+      } else if (err.code === 'auth/invalid-email') {
+        friendlyError = 'Please enter a valid email address.';
+      } else if (err.code === 'auth/weak-password') {
+        friendlyError = 'The password is too weak.';
+      }
+      setError(friendlyError);
     } finally {
       setIsSubmitting(false);
     }
@@ -79,7 +87,7 @@ export default function Signup() {
         const result = await signInWithPopup(auth, googleProvider);
         if (result.user) {
             // After successful Firebase Google auth, authenticate with our own backend
-            const res = await fetch('/api/auth/google', {
+            const res = await fetch('/api/auth/session', {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({

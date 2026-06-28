@@ -6,6 +6,9 @@ import {
   RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar, Legend
 } from 'recharts';
 
+import { onAuthStateChanged } from 'firebase/auth';
+import { auth } from '../lib/firebaseClient';
+
 export default function Dashboard() {
   const router = useRouter();
   const [loading, setLoading] = useState(true);
@@ -54,13 +57,7 @@ export default function Dashboard() {
   }, [activeView]);
 
   useEffect(() => {
-    const fetchStats = async () => {
-      const token = localStorage.getItem('authToken');
-      if (!token || token === 'undefined' || token === 'null') {
-        router.push('/login?redirect=/dashboard');
-        return;
-      }
-
+    const fetchStats = async (token: string) => {
       try {
         const res = await fetch('/api/dashboard/stats', {
           headers: {
@@ -84,7 +81,51 @@ export default function Dashboard() {
       }
     };
 
-    fetchStats();
+    const unsubscribe = onAuthStateChanged(auth, async (user) => {
+      if (!user) {
+        router.push('/login?redirect=/dashboard');
+        return;
+      }
+
+      // Check email verification status
+      if (!user.emailVerified) {
+        router.push('/verify-email');
+        return;
+      }
+
+      let token = localStorage.getItem('authToken');
+      if (!token || token === 'undefined' || token === 'null') {
+        try {
+          const res = await fetch('/api/auth/session', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              email: user.email,
+              displayName: user.displayName,
+              uid: user.uid
+            })
+          });
+          if (res.ok) {
+            const data = await res.json();
+            if (data.token) {
+              localStorage.setItem('authToken', data.token);
+              token = data.token;
+            }
+          }
+        } catch (err) {
+          console.error("Failed to fetch session token:", err);
+        }
+      }
+
+      if (token) {
+        fetchStats(token);
+      } else {
+        setError("Failed to authenticate session. Please try logging in again.");
+        setLoading(false);
+      }
+    });
+
+    return () => unsubscribe();
   }, [router]);
 
   if (loading) {

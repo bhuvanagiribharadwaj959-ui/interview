@@ -3,7 +3,7 @@ import Head from 'next/head';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
 import { Mail, Lock, Eye, EyeOff } from 'lucide-react';
-import { signInWithPopup } from 'firebase/auth'; // Ensure this uses your already configured firebase
+import { signInWithPopup, signInWithEmailAndPassword } from 'firebase/auth';
 import { auth, googleProvider } from '../lib/firebaseClient';
 import styles from '../styles/Login.module.css';
 import InterviewIllustration from '../components/ui/InterviewIllustration';
@@ -32,21 +32,31 @@ export default function Login() {
     setError('');
 
     try {
-      // Use Firebase Auth client-side or your custom API
-      // Since signup used /api/auth/signup, let's assume /api/auth/login exists
-      const res = await fetch('/api/auth/login', {
+      // 1. Authenticate with Firebase Auth
+      const userCredential = await signInWithEmailAndPassword(auth, formData.email, formData.password);
+      const user = userCredential.user;
+
+      // 2. Check email verification status
+      if (!user.emailVerified) {
+        router.push('/verify-email');
+        return;
+      }
+
+      // 3. Exchange credentials for backend JWT token
+      const res = await fetch('/api/auth/session', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({
-           email: formData.email,
-           password: formData.password
+           email: user.email,
+           displayName: user.displayName,
+           uid: user.uid
         })
       });
       
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error || 'Login failed');
+      if (!res.ok) throw new Error(data.error || 'Authentication failed');
       
       // Store token and redirect
       const redirectUrl = router.query.redirect ? String(router.query.redirect) : '/dashboard';
@@ -55,13 +65,20 @@ export default function Login() {
           localStorage.setItem('authToken', data.token);
           window.location.href = redirectUrl;
       } else {
-          // Fallback if no token returned but success
           window.location.href = redirectUrl;
       }
 
     } catch (err: any) {
       console.error(err);
-      setError(err.message || 'Invalid email or password.');
+      let friendlyError = 'Invalid email or password.';
+      if (err.code === 'auth/user-not-found' || err.code === 'auth/wrong-password' || err.code === 'auth/invalid-credential') {
+        friendlyError = 'Incorrect email or password. Please try again.';
+      } else if (err.code === 'auth/invalid-email') {
+        friendlyError = 'Please enter a valid email address.';
+      } else if (err.message) {
+        friendlyError = err.message;
+      }
+      setError(friendlyError);
     } finally {
       setIsSubmitting(false);
     }
@@ -72,8 +89,7 @@ export default function Login() {
         const result = await signInWithPopup(auth, googleProvider);
         if (result.user) {
             // After successful Firebase Google auth, authenticate with our own backend
-            // to generate the JWT that the rest of the application (like /dashboard) expects.
-            const res = await fetch('/api/auth/google', {
+            const res = await fetch('/api/auth/session', {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({
