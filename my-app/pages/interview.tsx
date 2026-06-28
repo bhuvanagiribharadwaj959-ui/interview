@@ -586,7 +586,9 @@ Rules of Conduct:
         audioContextRef.current = audioContext;
 
         if (audioContext.state === 'suspended') {
-          await audioContext.resume();
+          // Do not await this, as it may hang indefinitely if the browser blocks it without a user gesture.
+          // MediaRecorder will still capture the audio correctly even if Analyser fails.
+          audioContext.resume().catch(e => console.warn('AudioContext resume failed:', e));
         }
 
         const source = audioContext.createMediaStreamSource(localStream);
