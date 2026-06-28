@@ -18,57 +18,56 @@ function outputsMatch(actualOutput = '', expectedOutput = '') {
     actualNumbers.every((value, index) => value === expectedNumbers[index]);
 }
 
-// Glot.io Language Names and Filenames
+// Judge0 Language IDs (Modern versions)
 const languageMap = {
-  python: { lang: 'python', filename: 'main.py' },
-  javascript: { lang: 'javascript', filename: 'main.js' },
-  php: { lang: 'php', filename: 'main.php' },
-  java: { lang: 'java', filename: 'Main.java' },
-  cpp: { lang: 'cpp', filename: 'main.cpp' },
-  'c++': { lang: 'cpp', filename: 'main.cpp' },
-  csharp: { lang: 'csharp', filename: 'main.cs' },
-  'c#': { lang: 'csharp', filename: 'main.cs' },
-  go: { lang: 'go', filename: 'main.go' },
-  ruby: { lang: 'ruby', filename: 'main.rb' },
-  rust: { lang: 'rust', filename: 'main.rs' },
-  swift: { lang: 'swift', filename: 'main.swift' }
+  python: 100,      // Python (3.12.5)
+  javascript: 102,  // Node.js (22.08.0)
+  php: 98,          // PHP (8.3.11)
+  java: 91,         // Java (JDK 17.0.6)
+  cpp: 105,         // C++ (GCC 14.1.0)
+  'c++': 105,
+  c: 103,           // C (GCC 14.1.0)
+  csharp: 51,       // C# (Mono)
+  'c#': 51,
+  go: 107,          // Go (1.23.5)
+  ruby: 72,         // Ruby (2.7.0)
+  rust: 108,        // Rust (1.85.0)
+  swift: 83,        // Swift (5.2.3)
+  typescript: 101   // TypeScript (5.6.2)
 };
 
-async function runOnGlot(langConfig, code, input) {
-  const url = `https://run.glot.io/languages/${langConfig.lang}/latest`;
-  const token = process.env.GLOT_API_TOKEN;
-
-  const headers = {
-    'Content-Type': 'application/json'
-  };
-
-  if (token) {
-    headers['Authorization'] = `Token ${token}`;
-  }
-
+async function runOnJudge0(languageId, code, input) {
+  const url = `https://ce.judge0.com/submissions?base64_encoded=false&wait=true`;
+  
   const response = await fetch(url, {
     method: 'POST',
-    headers,
+    headers: {
+      'Content-Type': 'application/json'
+    },
     body: JSON.stringify({
-      files: [{ name: langConfig.filename, content: code }],
+      source_code: code,
+      language_id: languageId,
       stdin: input || ""
     })
   });
 
   if (!response.ok) {
-    throw new Error(`Glot.io API responded with status: ${response.status}`);
+    throw new Error(`Judge0 API responded with status: ${response.status}`);
   }
 
   const result = await response.json();
   
-  if (result.message) {
+  if (result.message && !result.status) {
     throw new Error(result.message);
   }
 
+  // Judge0 status ids: 3 is Accepted. Anything else (like compilation error, runtime error) has error output
+  const hasError = result.status && result.status.id !== 3;
+
   return {
     stdout: result.stdout || '',
-    stderr: result.stderr || result.error || '',
-    exitCode: (result.stderr || result.error) ? 1 : 0,
+    stderr: result.stderr || result.compile_output || '',
+    exitCode: hasError ? 1 : 0,
     signal: null
   };
 }
@@ -97,7 +96,7 @@ export default async function handler(req, res) {
       const results = [];
 
       for (const testCase of testCases) {
-        const execution = await runOnGlot(langConfig, code, testCase.input || '');
+        const execution = await runOnJudge0(langConfig, code, testCase.input || '');
         const actualOutput = normalizeTextOutput(execution.stdout);
         const expectedOutput = normalizeTextOutput(testCase.expectedOutput || '');
         const errorMessage = normalizeTextOutput(execution.stderr);
@@ -135,7 +134,7 @@ export default async function handler(req, res) {
     }
 
     // Run custom input execution
-    const execution = await runOnGlot(langConfig, code, input);
+    const execution = await runOnJudge0(langConfig, code, input);
     const output = normalizeTextOutput(execution.stdout);
     const error = normalizeTextOutput(execution.stderr);
 
