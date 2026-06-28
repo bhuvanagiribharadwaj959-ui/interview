@@ -55,6 +55,13 @@ export default function Interview() {
   const ttsRequestIdRef = React.useRef(0);
   const ttsWatchdogRef = React.useRef<any>(null);
   const manualRecognitionStopRef = React.useRef(false);
+
+  // MediaRecorder & Web Audio API Refs for Whisper STT
+  const mediaRecorderRef = React.useRef<MediaRecorder | null>(null);
+  const audioChunksRef = React.useRef<Blob[]>([]);
+  const audioContextRef = React.useRef<AudioContext | null>(null);
+  const analyserRef = React.useRef<AnalyserNode | null>(null);
+  const streamRef = React.useRef<MediaStream | null>(null);
   
   // New States for Timer & Code Editor
   const [timer, setTimer] = useState(0);
@@ -503,79 +510,143 @@ Rules of Conduct:
   }, []);
   
   useEffect(() => {
+    let isCurrent = true;
+
     if (interviewState !== 'listening' || isMuted) {
-      if (recognitionRef.current) {
-        try { recognitionRef.current.stop(); } catch {}
-        recognitionRef.current = null;
-      }
-      if (silenceTimerRef.current) clearTimeout(silenceTimerRef.current);
       return;
     }
 
-    const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
-    if (!SpeechRecognition) return;
+    let localStream: MediaStream | null = null;
+    let mediaRecorder: MediaRecorder | null = null;
+    let audioContext: AudioContext | null = null;
+    let analyser: AnalyserNode | null = null;
+    let checkInterval: NodeJS.Timeout;
 
-    let recognition = new SpeechRecognition();
-    recognition.continuous = true;
-    recognition.interimResults = true;
-    recognition.lang = 'en-US';
-    
-    let finalTranscript = '';
-    
-    recognition.onresult = (event: any) => {
-      let interimTranscript = '';
-      for (let i = event.resultIndex; i < event.results.length; i++) {
-        if (event.results[i].isFinal) finalTranscript += event.results[i][0].transcript + ' ';
-        else interimTranscript += event.results[i][0].transcript;
-      }
-
-      if (silenceTimerRef.current) clearTimeout(silenceTimerRef.current);
-      silenceTimerRef.current = setTimeout(() => {
-        const combined = (finalTranscript + ' ' + interimTranscript).trim();
-        if (combined) {
-          manualRecognitionStopRef.current = true;
-          try { recognition.stop(); } catch {}
-          recognitionRef.current = null;
-          handleAiInteraction(combined);
+    const startRecording = async () => {
+      try {
+        localStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        if (!isCurrent) {
+          localStream.getTracks().forEach(track => track.stop());
+          return;
         }
-      }, 3000); // 3 seconds silence
-    };
+        streamRef.current = localStream;
 
-    recognition.onerror = (event: any) => {
-      console.warn("Speech recognition error:", event.error);
-      if (event.error === 'not-allowed') {
-        // Handling mic blocking
-        setInterviewState('idle');
+        mediaRecorder = new MediaRecorder(localStream, { mimeType: 'audio/webm' });
+        mediaRecorderRef.current = mediaRecorder;
+        audioChunksRef.current = [];
+
+        mediaRecorder.ondataavailable = (event) => {
+          if (event.data.size > 0) {
+            audioChunksRef.current.push(event.data);
+          }
+        };
+
+        mediaRecorder.onstop = async () => {
+          if (!isCurrent) return;
+          if (audioChunksRef.current.length === 0) return;
+          
+          const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/webm' });
+          
+          if (hasSpoken) {
+            setInterviewState('analyzing');
+            try {
+              const res = await fetch('/api/transcribe', {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'audio/webm'
+                },
+                body: audioBlob
+              });
+              
+              if (!isCurrent) return;
+
+              if (res.ok) {
+                const data = await res.json();
+                if (data.transcript && data.transcript.trim()) {
+                  handleAiInteraction(data.transcript.trim());
+                } else {
+                  setInterviewState('listening');
+                }
+              } else {
+                setInterviewState('listening');
+              }
+            } catch (err) {
+              console.error("Transcription error:", err);
+              if (isCurrent) {
+                setInterviewState('listening');
+              }
+            }
+          }
+        };
+
+        mediaRecorder.start();
+
+        const AudioContextClass = window.AudioContext || (window as any).webkitAudioContext;
+        audioContext = new AudioContextClass();
+        audioContextRef.current = audioContext;
+
+        if (audioContext.state === 'suspended') {
+          await audioContext.resume();
+        }
+
+        const source = audioContext.createMediaStreamSource(localStream);
+        analyser = audioContext.createAnalyser();
+        analyser.fftSize = 512;
+        analyserRef.current = analyser;
+        source.connect(analyser);
+
+        const bufferLength = analyser.frequencyBinCount;
+        const dataArray = new Uint8Array(bufferLength);
+
+        const silenceThreshold = 15;
+        let silenceStart = Date.now();
+        let hasSpoken = false;
+
+        checkInterval = setInterval(() => {
+          if (!analyser || !isCurrent) return;
+          analyser.getByteFrequencyData(dataArray);
+
+          let sum = 0;
+          for (let i = 0; i < bufferLength; i++) {
+            sum += dataArray[i];
+          }
+          const averageVolume = sum / bufferLength;
+
+          if (averageVolume > silenceThreshold) {
+            hasSpoken = true;
+            silenceStart = Date.now();
+          } else {
+            if (hasSpoken && Date.now() - silenceStart > 2500) {
+              clearInterval(checkInterval);
+              if (mediaRecorder && mediaRecorder.state !== 'inactive') {
+                mediaRecorder.stop();
+              }
+              localStream?.getTracks().forEach(track => track.stop());
+            }
+          }
+        }, 100);
+
+      } catch (err) {
+        console.error("Failed to start recording:", err);
+        if (isCurrent) {
+          setInterviewState('idle');
+        }
       }
     };
 
-    // Auto-restart recognition if it unexpectedly ends while we're still 'listening'
-    recognition.onend = () => {
-      if (manualRecognitionStopRef.current) {
-        manualRecognitionStopRef.current = false;
-        return;
-      }
-
-      if (interviewState === 'listening' && !isMuted && recognitionRef.current === recognition) {
-        try {
-          recognition.start();
-        } catch (e) {}
-      }
-    };
-
-    try {
-      recognition.start();
-      recognitionRef.current = recognition;
-    } catch (e) {
-      console.error("Could not start recognition:", e);
-    }
+    startRecording();
 
     return () => {
-      if (silenceTimerRef.current) clearTimeout(silenceTimerRef.current);
-      manualRecognitionStopRef.current = true;
-      if (recognitionRef.current) {
-        try { recognitionRef.current.stop(); } catch {}
-        recognitionRef.current = null;
+      isCurrent = false;
+      clearInterval(checkInterval);
+      if (mediaRecorder && mediaRecorder.state !== 'inactive') {
+        try { mediaRecorder.stop(); } catch {}
+      }
+      if (localStream) {
+        try { localStream.getTracks().forEach(track => track.stop()); } catch {}
+      }
+      if (audioContext) {
+        try { audioContext.close(); } catch {}
       }
     };
   }, [interviewState, isMuted]);
@@ -596,9 +667,14 @@ Rules of Conduct:
         } catch {}
         currentAudioRef.current = null;
       }
-      if (recognitionRef.current) {
-        try { recognitionRef.current.stop(); } catch {}
-        recognitionRef.current = null;
+      if (mediaRecorderRef.current && mediaRecorderRef.current.state !== 'inactive') {
+        try { mediaRecorderRef.current.stop(); } catch {}
+      }
+      if (streamRef.current) {
+        try { streamRef.current.getTracks().forEach(track => track.stop()); } catch {}
+      }
+      if (audioContextRef.current) {
+        try { audioContextRef.current.close(); } catch {}
       }
     };
   }, []);
@@ -832,8 +908,14 @@ Rules of Conduct:
   );
 
   const handleEndCall = async () => {
-    if (recognitionRef.current) {
-      try { recognitionRef.current.stop(); } catch {}
+    if (mediaRecorderRef.current && mediaRecorderRef.current.state !== 'inactive') {
+      try { mediaRecorderRef.current.stop(); } catch {}
+    }
+    if (streamRef.current) {
+      try { streamRef.current.getTracks().forEach(track => track.stop()); } catch {}
+    }
+    if (audioContextRef.current) {
+      try { audioContextRef.current.close(); } catch {}
     }
     
     // Stop timers & logic
