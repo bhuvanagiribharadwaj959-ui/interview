@@ -53,10 +53,10 @@ export default function Login() {
       
       if (data.token) {
           localStorage.setItem('authToken', data.token);
-          router.push(redirectUrl);
+          window.location.href = redirectUrl;
       } else {
           // Fallback if no token returned but success
-          router.push(redirectUrl);
+          window.location.href = redirectUrl;
       }
 
     } catch (err: any) {
@@ -90,7 +90,7 @@ export default function Login() {
             }
             
             const redirectUrl = router.query.redirect ? String(router.query.redirect) : '/dashboard';
-            router.push(redirectUrl);
+            window.location.href = redirectUrl;
         }
       } catch (err: any) {
         setError('Google login failed. ' + err.message);

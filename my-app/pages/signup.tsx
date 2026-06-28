@@ -62,7 +62,7 @@ export default function Signup() {
       // Auto login or redirect
       if (data.token) {
           localStorage.setItem('authToken', data.token);
-          router.push('/login');
+          window.location.href = '/dashboard';
       } else {
           router.push('/login');
       }
@@ -78,7 +78,7 @@ export default function Signup() {
       try {
         const result = await signInWithPopup(auth, googleProvider);
         if (result.user) {
-            router.push('/home');
+            window.location.href = '/dashboard';
         }
       } catch (err: any) {
         setError('Google signup failed. ' + err.message);
