@@ -21,10 +21,9 @@ export default async function handler(req, res) {
   const userId = decoded.id;
 
   try {
-    const interviewsRef = collection(db, 'interviews');
+    const interviewsRef = collection(db, 'users', userId, 'sessions');
     const q = query(
       interviewsRef,
-      where('userId', '==', userId),
       orderBy('startTime', 'desc')
     );
     
@@ -39,8 +38,8 @@ export default async function handler(req, res) {
     console.error('Error fetching interview history:', error);
     // Fallback if index doesn't exist for orderBy
     try {
-      const interviewsRef = collection(db, 'interviews');
-      const q = query(interviewsRef, where('userId', '==', userId));
+      const interviewsRef = collection(db, 'users', userId, 'sessions');
+      const q = query(interviewsRef);
       const querySnapshot = await getDocs(q);
       const interviews = querySnapshot.docs.map(doc => ({
         _id: doc.id,

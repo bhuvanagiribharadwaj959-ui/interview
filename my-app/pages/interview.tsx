@@ -60,6 +60,10 @@ export default function Interview() {
   const [timer, setTimer] = useState(0);
   const [timerActive, setTimerActive] = useState(false);
   const [showCodeEditorButton, setShowCodeEditorButton] = useState(false);
+  
+  // Session and Resume tracking
+  const [interviewId, setInterviewId] = useState<string | null>(null);
+  const [resumeId, setResumeId] = useState<string | null>(null);
 
   const fileInputRef = React.useRef<HTMLInputElement>(null);
 
@@ -372,6 +376,36 @@ Rules of Conduct:
   useEffect(() => {
     if (step === STEPS.INTERVIEW && conversationHistory.length === 0 && interviewState === 'idle') {
       setTimerActive(true);
+
+      const startSession = async () => {
+        try {
+          const token = localStorage.getItem('authToken');
+          if (token) {
+            const res = await fetch('/api/interview/start', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+              },
+              body: JSON.stringify({
+                type: interviewType || 'Mock Interview',
+                difficulty: 'medium',
+                resumeId: resumeId
+              })
+            });
+            if (res.ok) {
+              const data = await res.json();
+              if (data.interviewId) {
+                setInterviewId(data.interviewId);
+              }
+            }
+          }
+        } catch (err) {
+          console.error("Failed to start session:", err);
+        }
+      };
+
+      startSession();
       handleAiInteraction("");
     } else if (step !== STEPS.INTERVIEW) {
       setTimerActive(false);
@@ -683,6 +717,33 @@ Rules of Conduct:
                 if (res.ok && data.text) {
                   setResumeText(data.text);
                   setResumeLoaded(true);
+
+                  // Save the parsed resume text to Firestore
+                  try {
+                    const token = localStorage.getItem('authToken');
+                    if (token) {
+                      const saveRes = await fetch('/api/resume/save', {
+                        method: 'POST',
+                        headers: {
+                          'Content-Type': 'application/json',
+                          'Authorization': `Bearer ${token}`
+                        },
+                        body: JSON.stringify({
+                          rawText: data.text,
+                          skills: [],
+                          experienceYrs: 0
+                        })
+                      });
+                      if (saveRes.ok) {
+                        const saveData = await saveRes.json();
+                        if (saveData.resumeId) {
+                          setResumeId(saveData.resumeId);
+                        }
+                      }
+                    }
+                  } catch (saveErr) {
+                    console.error("Failed to save resume to database:", saveErr);
+                  }
                 } else {
                   console.error("Failed to parse resume", data);
                   setResumeLoaded(true); // Fallback to loaded state anyway
@@ -795,6 +856,8 @@ Rules of Conduct:
       // Step 2: Save to Database
       const token = localStorage.getItem('authToken');
       const payload = {
+        interviewId,
+        resumeId,
         type: interviewType,
         difficulty: 'Medium',
         duration: `${Math.floor(timer / 60)} min`,

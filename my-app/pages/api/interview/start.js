@@ -22,15 +22,22 @@ export default async function handler(req, res) {
   const { type, difficulty } = req.body;
 
   try {
-    const interviewsRef = collection(db, 'interviews');
+    const sessionsRef = collection(db, 'users', userId, 'sessions');
 
-    const newInterview = {
+    const newSession = {
+      resumeId: null, // will be updated when resume is parsed/attached
+      topic: type || 'Mock Interview',
+      difficulty: difficulty || 'medium',
+      status: 'ongoing',
+      score: 0,
+      feedback: '',
+      startedAt: new Date(),
+      endedAt: null,
+
+      // Keep legacy fields to support existing dashboard and history logic
       userId,
       startTime: new Date().toISOString(),
       type: type || 'Mock Interview',
-      difficulty: difficulty || 'Medium',
-      status: 'in-progress',
-      // Initial null values for scores
       readinessScore: 0,
       vocabularyScore: 0, 
       communicationScore: 0,
@@ -40,7 +47,7 @@ export default async function handler(req, res) {
       duration: '0 min'
     };
 
-    const result = await addDoc(interviewsRef, newInterview);
+    const result = await addDoc(sessionsRef, newSession);
     
     return res.status(200).json({ 
       success: true, 

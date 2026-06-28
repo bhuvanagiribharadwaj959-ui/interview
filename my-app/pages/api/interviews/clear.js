@@ -15,14 +15,14 @@ export default async function handler(req, res) {
   if (!decoded || !decoded.id) return res.status(401).json({ error: 'Invalid token' });
 
   try {
-    const interviewsRef = collection(db, 'interviews');
-    const q = query(interviewsRef, where('userId', '==', decoded.id));
+        const interviewsRef = collection(db, 'users', decoded.id, 'sessions');
+    const q = query(interviewsRef);
     const snapshot = await getDocs(q);
     
     let deletedCount = 0;
     const deletePromises = snapshot.docs.map(docSnapshot => {
       deletedCount++;
-      return deleteDoc(doc(db, 'interviews', docSnapshot.id));
+      return deleteDoc(doc(db, 'users', decoded.id, 'sessions', docSnapshot.id));
     });
     
     await Promise.all(deletePromises);

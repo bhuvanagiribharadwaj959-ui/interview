@@ -23,8 +23,8 @@ export default async function handler(req, res) {
   const userName = decoded.name || 'Student'; // Add user name to response, fallback to Student
 
   try {
-    const interviewsRef = collection(db, 'interviews');
-    const q = query(interviewsRef, where('userId', '==', userId));
+        const interviewsRef = collection(db, 'users', userId, 'sessions');
+    const q = query(interviewsRef);
     const querySnapshot = await getDocs(q);
 
     // Fetch all interviews for this user
