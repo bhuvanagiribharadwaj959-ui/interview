@@ -598,9 +598,10 @@ Rules of Conduct:
         const bufferLength = analyser.frequencyBinCount;
         const dataArray = new Uint8Array(bufferLength);
 
-        const silenceThreshold = 15;
+        const silenceThreshold = 5; // Lowered threshold to pick up quieter voices
         let silenceStart = Date.now();
         let hasSpoken = false;
+        let recordingStart = Date.now();
 
         checkInterval = setInterval(() => {
           if (!analyser || !isCurrent) return;
@@ -611,16 +612,32 @@ Rules of Conduct:
             sum += dataArray[i];
           }
           const averageVolume = sum / bufferLength;
+          const now = Date.now();
+
+          // Safety fallback 1: Force stop after 45 seconds of continuous recording
+          if (now - recordingStart > 45000) {
+            hasSpoken = true;
+            clearInterval(checkInterval);
+            if (mediaRecorder && mediaRecorder.state !== 'inactive') mediaRecorder.stop();
+            localStream?.getTracks().forEach(track => track.stop());
+            return;
+          }
 
           if (averageVolume > silenceThreshold) {
             hasSpoken = true;
-            silenceStart = Date.now();
+            silenceStart = now;
           } else {
-            if (hasSpoken && Date.now() - silenceStart > 2500) {
+            // Normal flow: Stop if they spoke and were silent for 2.5 seconds
+            if (hasSpoken && now - silenceStart > 2500) {
               clearInterval(checkInterval);
-              if (mediaRecorder && mediaRecorder.state !== 'inactive') {
-                mediaRecorder.stop();
-              }
+              if (mediaRecorder && mediaRecorder.state !== 'inactive') mediaRecorder.stop();
+              localStream?.getTracks().forEach(track => track.stop());
+            } 
+            // Safety fallback 2: If no sound detected for 10 seconds, reset the loop
+            else if (!hasSpoken && now - silenceStart > 10000) {
+              hasSpoken = true; // Send empty audio to naturally loop back to listening
+              clearInterval(checkInterval);
+              if (mediaRecorder && mediaRecorder.state !== 'inactive') mediaRecorder.stop();
               localStream?.getTracks().forEach(track => track.stop());
             }
           }
