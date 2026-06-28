@@ -51,6 +51,14 @@ Return only valid JSON with this exact shape:
       "output": string,
       "explanation": string
     }
+  ],
+  "testCases": [
+    {
+      "id": string,
+      "name": string,
+      "input": string,
+      "expectedOutput": string
+    }
   ]
 }
 
@@ -59,6 +67,7 @@ Rules:
 - Include a clear problem description.
 - Include 2 to 4 constraints.
 - Include at least 2 sample input/output examples.
+- CRITICAL: Generate exactly 5 robust test cases in the "testCases" array. Include edge cases (like empty arrays or max constraints). Ensure the "input" and "expectedOutput" can be evaluated via standard compiler stdout.
 - Do not wrap the response in markdown or code fences.`;
 
   const askRes = await fetch('https://api.groq.com/openai/v1/chat/completions', {
@@ -90,7 +99,8 @@ Rules:
     category: parsed.category || FALLBACK_QUESTION.category,
     description: parsed.description || FALLBACK_QUESTION.description,
     constraints: Array.isArray(parsed.constraints) ? parsed.constraints : FALLBACK_QUESTION.constraints,
-    examples: Array.isArray(parsed.examples) && parsed.examples.length > 0 ? parsed.examples : FALLBACK_QUESTION.examples
+    examples: Array.isArray(parsed.examples) && parsed.examples.length > 0 ? parsed.examples : FALLBACK_QUESTION.examples,
+    testCases: Array.isArray(parsed.testCases) ? parsed.testCases : []
   };
 }
 

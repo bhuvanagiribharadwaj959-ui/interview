@@ -235,59 +235,7 @@ export default function UdyogaprepEditor() {
     setLastRunAssessment(null);
   }, [selectedLanguage]);
 
-  useEffect(() => {
-    const protocol = window.location.protocol === 'https:' ? 'wss' : 'ws';
-    const ws = new WebSocket(`${protocol}://${window.location.host}/api/execute`);
-    socketRef.current = ws;
-
-    ws.onmessage = (event) => {
-      try {
-        const message = JSON.parse(event.data);
-
-        if (message.type === 'output' || message.type === 'stderr') {
-          const text = String(message.data || '');
-          if (text) {
-            setTerminalOutput((prev) => prev + text);
-          }
-          return;
-        }
-
-        if (message.type === 'error') {
-          const errorLine = message.data || message.message || 'Execution error';
-          setTerminalOutput((prev) => prev + errorLine + '\n');
-          return;
-        }
-
-        if (message.type === 'status') {
-          const statusLine = message.message || '';
-          if (statusLine && !statusLine.includes('Code execution started')) {
-            setTerminalOutput((prev) => prev + statusLine + '\n');
-          }
-
-          if (statusLine.includes('Process exited')) {
-            setIsRunning(false);
-            setLastRunAssessment({ status: 'accepted', detail: statusLine });
-          }
-        }
-      } catch {
-        setTerminalOutput((prev) => prev + String(event.data || '') + '\n');
-      }
-    };
-
-    ws.onerror = () => {
-      setTerminalOutput((prev) => prev + 'Error: Terminal connection failed.\n');
-      setIsRunning(false);
-    };
-
-    ws.onclose = () => {
-      setIsRunning(false);
-    };
-
-    return () => {
-      ws.close();
-      socketRef.current = null;
-    };
-  }, []);
+  // Removed WebSocket initialization since we use HTTP on Vercel
 
   useEffect(() => {
     if (!isDraggingHeight) return;
@@ -318,37 +266,55 @@ export default function UdyogaprepEditor() {
     setIsTerminalOpen(true);
     setIsRunning(true);
     setLastRunAssessment(null);
-    const template = LANGUAGE_TEMPLATES[selectedLanguage];
-    setTerminalOutput('');
+    setTerminalOutput('Running...\n');
 
-    const socket = socketRef.current;
-    if (!socket || socket.readyState !== WebSocket.OPEN) {
-      setTerminalOutput((prev) => prev + 'Error: Terminal is not connected. Refresh and try again.\n');
-      setLastRunAssessment({ status: 'runtime-error', detail: 'Terminal not connected' });
+    try {
+      const res = await fetch('/api/execute_code', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          language: selectedLanguage,
+          code: code,
+          input: terminalInput || '',
+          testCases: problem.testCases || []
+        })
+      });
+
+      const data = await res.json();
+      
+      if (!res.ok) {
+        setTerminalOutput(prev => prev + (data.error || 'Execution failed') + '\n' + (data.output || ''));
+        setLastRunAssessment({ status: 'runtime-error', detail: data.error });
+      } else {
+        if (data.results) {
+           // It ran test cases
+           setTerminalOutput(prev => prev + `Ran ${data.totalCount} tests. Passed: ${data.passedCount}. Failed: ${data.failedCount}.\n`);
+           data.results.forEach((r: any) => {
+             setTerminalOutput(prev => prev + `Test ${r.name || r.id}: ${r.passed ? 'PASSED' : 'FAILED'}\n`);
+             if (!r.passed) {
+               setTerminalOutput(prev => prev + `Expected: ${r.expectedOutput}\nGot: ${r.actualOutput}\n`);
+             }
+           });
+           setLastRunAssessment({ status: data.status, detail: \`Passed \${data.passedCount}/\${data.totalCount} tests\` });
+        } else {
+           // Normal execution
+           setTerminalOutput(prev => prev + (data.output || 'Execution completed successfully.') + '\n');
+           setLastRunAssessment({ status: 'accepted', detail: 'Execution completed' });
+        }
+      }
+    } catch (err) {
+      setTerminalOutput(prev => prev + 'Error: Failed to connect to execution server.\n');
+      setLastRunAssessment({ status: 'runtime-error', detail: 'Server connection failed' });
+    } finally {
       setIsRunning(false);
-      return;
     }
-
-    socket.send(JSON.stringify({
-      type: 'execute',
-      language: selectedLanguage,
-      code,
-    }));
   };
 
   const handleTerminalInputSubmit = () => {
-    const value = terminalInput;
-    if (!value || !isRunning) return;
-
-    const socket = socketRef.current;
-    if (!socket || socket.readyState !== WebSocket.OPEN) {
-      setTerminalOutput((prev) => prev + 'Error: Terminal is not connected.\n');
-      return;
-    }
-
-    socket.send(JSON.stringify({ type: 'input', data: value }));
-    setTerminalOutput((prev) => prev + value + '\n');
-    setTerminalInput('');
+    // With HTTP POST, interactive input during execution isn't possible,
+    // so we just store the input to be sent on the next "Run"
+    setTerminalOutput((prev) => prev + terminalInput + '\n');
+    handleRunCode();
   };
 
   const [isLanguageMenuOpen, setIsLanguageMenuOpen] = useState(false);

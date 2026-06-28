@@ -18,54 +18,61 @@ function outputsMatch(actualOutput = '', expectedOutput = '') {
     actualNumbers.every((value, index) => value === expectedNumbers[index]);
 }
 
-// Judge0 Language IDs
+// Piston Language Names
 const languageMap = {
-  python: 71,       // Python (3.8.1)
-  javascript: 93,   // Node.js (18.15.0)
-  php: 68,          // PHP (7.4.1)
-  java: 91,         // Java (OpenJDK 17.0.6)
-  cpp: 54,          // C++ (GCC 9.2.0)
-  'c++': 54,
-  csharp: 51,       // C# (Mono 6.6.0.161)
-  'c#': 51,
-  go: 60,           // Go (1.13.5)
-  ruby: 72,         // Ruby (2.7.0)
-  rust: 73,         // Rust (1.40.0)
-  swift: 83         // Swift (5.3.3)
+  python: 'python',
+  javascript: 'javascript',
+  php: 'php',
+  java: 'java',
+  cpp: 'c++',
+  'c++': 'c++',
+  csharp: 'csharp',
+  'c#': 'csharp',
+  go: 'go',
+  ruby: 'ruby',
+  rust: 'rust',
+  swift: 'swift'
 };
 
-async function runOnJudge0(languageId, code, input) {
-  const apiKey = process.env.JUDGE0_API_KEY;
-  if (!apiKey) {
-    throw new Error("JUDGE0_API_KEY is missing from environment variables.");
+async function runOnPiston(languageId, code, input) {
+  const url = process.env.PISTON_API_URL || 'https://emkc.org/api/v2/piston/execute';
+  const apiKey = process.env.PISTON_API_KEY;
+
+  const headers = {
+    'Content-Type': 'application/json'
+  };
+
+  if (apiKey) {
+    // Some piston instances use Authorization, others use x-api-key
+    headers['Authorization'] = apiKey;
   }
 
-  const response = await fetch('https://judge0-ce.p.rapidapi.com/submissions?base64_encoded=false&wait=true', {
+  const response = await fetch(url, {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'X-RapidAPI-Key': apiKey,
-      'X-RapidAPI-Host': 'judge0-ce.p.rapidapi.com'
-    },
+    headers,
     body: JSON.stringify({
-      language_id: languageId,
-      source_code: code,
+      language: languageId,
+      version: '*',
+      files: [{ content: code }],
       stdin: input || ""
     })
   });
 
   if (!response.ok) {
-    throw new Error(`Judge0 API responded with status: ${response.status}`);
+    throw new Error(`Piston API responded with status: ${response.status}`);
   }
 
   const result = await response.json();
   
-  // Judge0 status 3 is "Accepted". >3 are usually compilation or runtime errors.
+  if (result.message) {
+    throw new Error(result.message);
+  }
+
   return {
-    stdout: result.stdout || '',
-    stderr: result.stderr || result.compile_output || '',
-    exitCode: result.status.id === 3 ? 0 : 1,
-    statusId: result.status.id
+    stdout: result.run.stdout || '',
+    stderr: result.run.stderr || result.compile?.stderr || '',
+    exitCode: result.run.code || result.compile?.code || 0,
+    signal: result.run.signal || null
   };
 }
 
@@ -93,7 +100,7 @@ export default async function handler(req, res) {
       const results = [];
 
       for (const testCase of testCases) {
-        const execution = await runOnJudge0(langId, code, testCase.input || '');
+        const execution = await runOnPiston(langId, code, testCase.input || '');
         const actualOutput = normalizeTextOutput(execution.stdout);
         const expectedOutput = normalizeTextOutput(testCase.expectedOutput || '');
         const errorMessage = normalizeTextOutput(execution.stderr);
@@ -131,7 +138,7 @@ export default async function handler(req, res) {
     }
 
     // Run custom input execution
-    const execution = await runOnJudge0(langId, code, input);
+    const execution = await runOnPiston(langId, code, input);
     const output = normalizeTextOutput(execution.stdout);
     const error = normalizeTextOutput(execution.stderr);
 
