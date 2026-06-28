@@ -56,7 +56,7 @@ export default function Dashboard() {
   useEffect(() => {
     const fetchStats = async () => {
       const token = localStorage.getItem('authToken');
-      if (!token) {
+      if (!token || token === 'undefined' || token === 'null') {
         router.push('/login?redirect=/dashboard');
         return;
       }
@@ -69,9 +69,7 @@ export default function Dashboard() {
         });
 
         if (res.status === 401) {
-          localStorage.removeItem('authToken');
-          router.push('/login?redirect=/dashboard');
-          return;
+          throw new Error('401 Unauthorized: Your token is invalid or expired. Please clear your cache and log in again.');
         }
 
         if (!res.ok) throw new Error('Failed to fetch stats');
