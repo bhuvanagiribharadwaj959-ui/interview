@@ -3,7 +3,8 @@ import Head from 'next/head';
 import { useRouter } from 'next/router';
 import {
   LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer,
-  RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar, Legend
+  RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar, Legend,
+  BarChart, Bar, Cell
 } from 'recharts';
 
 import { onAuthStateChanged } from 'firebase/auth';
@@ -27,7 +28,9 @@ export default function Dashboard() {
       logic: 0
     },
     readinessHistory: [],
-    recentActivity: []
+    recentActivity: [],
+    latestGoodTerms: [],
+    latestMissedTerms: []
   });
 
   const [interviewHistory, setInterviewHistory] = useState<any[]>([]);
@@ -229,43 +232,43 @@ export default function Dashboard() {
                   <div className="w-10 h-10 bg-primary-fixed text-primary rounded-full flex items-center justify-center">
                     <span className="material-symbols-outlined text-xl">verified_user</span>
                   </div>
-                  {/* Dynamic Trend Indicator */}
-                  {stats.readinessHistory.length > 2 && (
-                      <span className="text-[10px] font-bold text-green-600 bg-green-50 px-2 py-1 rounded-full uppercase tracking-wider">Wait for more data</span>
-                  )}
+                  <span className="text-[10px] font-bold text-amber-900 bg-amber-100 px-2 py-1 rounded-full uppercase tracking-wider">Wait for more data</span>
                 </div>
                 <div>
-                  <p className="text-secondary text-xs font-bold uppercase tracking-widest mb-1">Readiness Score</p>
-                  <h3 className="text-3xl font-extrabold text-on-surface font-headline">{stats.readinessScore}%</h3>
+                  <p className="text-secondary text-xs font-bold uppercase tracking-widest mb-1">Readiness score</p>
+                  <h3 className="text-3xl font-extrabold text-on-surface font-headline mb-1">{stats.readinessScore}%</h3>
+                  <p className="text-secondary text-xs font-medium">Needs {Math.max(0, 5 - stats.totalInterviews)} more interviews</p>
                 </div>
               </div>
-              <div className="bg-white p-6 rounded-xl card-shadow border border-outline-variant/10">
+              
+              <div className="bg-white p-6 rounded-xl card-shadow border border-outline-variant/10 group relative">
                 <div className="flex justify-between items-start mb-4">
                   <div className="w-10 h-10 bg-secondary-container text-on-secondary-container rounded-full flex items-center justify-center">
                     <span className="material-symbols-outlined text-xl">translate</span>
                   </div>
-                  <span className={`text-[10px] font-bold px-2 py-1 rounded-full uppercase tracking-wider ${stats.vocabularyScore >= 8 ? 'text-primary bg-primary-fixed' : 'text-secondary bg-gray-100'}`}>
-                    {stats.vocabularyScore >= 8 ? 'Strong' : stats.vocabularyScore >= 5 ? 'Average' : 'Needs Work'}
-                  </span>
+                  <span className="text-[10px] font-bold text-blue-900 bg-blue-100 px-2 py-1 rounded-full uppercase tracking-wider">Average</span>
                 </div>
                 <div>
                   <p className="text-secondary text-xs font-bold uppercase tracking-widest mb-1">Vocabulary</p>
-                  <h3 className="text-3xl font-extrabold text-on-surface font-headline">
-                    {stats.vocabularyScore}/10
-                  </h3>
+                  <h3 className="text-3xl font-extrabold text-on-surface font-headline mb-1">{stats.vocabularyScore}/10</h3>
+                  <p className="text-secondary text-xs font-medium">↑ +1 from last session</p>
                 </div>
               </div>
+
               <div className="bg-white p-6 rounded-xl card-shadow border border-outline-variant/10">
                 <div className="flex justify-between items-start mb-4">
                   <div className="w-10 h-10 bg-orange-50 text-tertiary rounded-full flex items-center justify-center">
                     <span className="material-symbols-outlined text-xl">local_fire_department</span>
                   </div>
+                  <span className="text-[10px] font-bold text-green-900 bg-green-100 px-2 py-1 rounded-full uppercase tracking-wider">Active</span>
                 </div>
                 <div>
-                  <p className="text-secondary text-xs font-bold uppercase tracking-widest mb-1">Current Streak</p>
-                  <h3 className="text-3xl font-extrabold text-on-surface font-headline">{stats.currentStreak} Days</h3>
+                  <p className="text-secondary text-xs font-bold uppercase tracking-widest mb-1">Current streak</p>
+                  <h3 className="text-3xl font-extrabold text-on-surface font-headline mb-1">{stats.currentStreak} days</h3>
+                  <p className="text-secondary text-xs font-medium">Best: {stats.bestStreak || stats.currentStreak} days</p>
                 </div>
               </div>
+
               <div className="bg-white p-6 rounded-xl card-shadow border border-outline-variant/10">
                 <div className="flex justify-between items-start mb-4">
                   <div className="w-10 h-10 bg-purple-50 text-purple-600 rounded-full flex items-center justify-center">
@@ -274,108 +277,200 @@ export default function Dashboard() {
                 </div>
                 <div>
                   <p className="text-secondary text-xs font-bold uppercase tracking-widest mb-1">Interviews</p>
-                  <h3 className="text-3xl font-extrabold text-on-surface font-headline">{stats.totalInterviews}</h3>
+                  <h3 className="text-3xl font-extrabold text-on-surface font-headline mb-1">{stats.totalInterviews}</h3>
+                  <p className="text-secondary text-xs font-medium">Last: {stats.recentActivity[0]?.date ? new Date(stats.recentActivity[0].date).toLocaleDateString(undefined, {month:'short', day:'numeric'}) : 'N/A'}</p>
                 </div>
               </div>
             </div>
 
-            {/* Charts Section */}
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-              {/* Readiness Over Time */}
-              <div className="lg:col-span-2 bg-white p-8 rounded-2xl card-shadow border border-outline-variant/10">
-                <div className="flex items-center justify-between mb-8">
-                  <div>
-                    <h4 className="text-lg font-extrabold text-on-surface font-headline tracking-tight">Readiness Over Time</h4>
-                    <p className="text-sm text-on-surface-variant">Your progress history</p>
+            {/* Graphs Row 1 */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              {/* Readiness over time */}
+              <div className="bg-white p-8 rounded-2xl card-shadow border border-outline-variant/10">
+                <div className="mb-6">
+                    <h4 className="text-lg font-extrabold text-on-surface font-headline tracking-tight">Readiness over time</h4>
+                    <p className="text-sm text-on-surface-variant">Score breakdown per interview</p>
+                </div>
+                
+                <div className="flex items-center gap-4 mb-4 text-xs font-medium text-secondary">
+                  <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 bg-[#1a73e8] rounded-sm"></span> Technical</span>
+                  <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 bg-[#34a853] rounded-sm"></span> Communication</span>
+                  <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 bg-[#fbbc04] rounded-sm"></span> DSA</span>
+                  <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 bg-[#9334e6] rounded-sm"></span> Problem solving</span>
+                </div>
+
+                <div className="h-56 w-full mt-4">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <BarChart data={stats.readinessHistory.filter(d => d.hasData)} margin={{ top: 10, right: 0, left: -20, bottom: 0 }}>
+                      <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e5e7eb" />
+                      <XAxis dataKey="date" tickFormatter={(str) => new Date(str).toLocaleDateString(undefined, {month: 'short', day: 'numeric'})} axisLine={false} tickLine={false} tick={{fontSize: 11, fill: '#64748b', fontWeight: 500}} dy={10} />
+                      <YAxis domain={[0, 10]} axisLine={false} tickLine={false} tick={{fontSize: 11, fill: '#64748b', fontWeight: 500}} />
+                      <RechartsTooltip contentStyle={{backgroundColor: '#ffffff', borderColor: '#e5e7eb', color: '#1f2937', borderRadius: '8px', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)'}} />
+                      <Bar dataKey="technical" fill="#1a73e8" radius={[2, 2, 0, 0]} />
+                      <Bar dataKey="communication" fill="#34a853" radius={[2, 2, 0, 0]} />
+                      <Bar dataKey="dsa" fill="#fbbc04" radius={[2, 2, 0, 0]} />
+                      <Bar dataKey="problem_solving" fill="#9334e6" radius={[2, 2, 0, 0]} />
+                    </BarChart>
+                  </ResponsiveContainer>
+                </div>
+              </div>
+
+              {/* Skill Radar */}
+              <div className="bg-white p-8 rounded-2xl card-shadow border border-outline-variant/10">
+                <div className="mb-6">
+                    <h4 className="text-lg font-extrabold text-on-surface font-headline tracking-tight">Skill radar</h4>
+                    <p className="text-sm text-on-surface-variant">Latest interview breakdown</p>
+                </div>
+                <div className="h-64 w-full">
+                  {(() => {
+                    const latest = stats.readinessHistory.filter(d => d.hasData).slice(-1)[0];
+                    if (!latest) return <div className="text-gray-500 text-xs text-center mt-10 italic">No data</div>;
+                    const radarData = [
+                      { subject: 'Technical', A: latest.technical, fullMark: 10 },
+                      { subject: 'Communication', A: latest.communication, fullMark: 10 },
+                      { subject: 'DSA', A: latest.dsa, fullMark: 10 },
+                      { subject: 'Confidence', A: latest.confidence, fullMark: 10 },
+                      { subject: 'Problem solving', A: latest.problem_solving, fullMark: 10 }
+                    ];
+                    return (
+                      <ResponsiveContainer width="100%" height="100%">
+                        <RadarChart cx="50%" cy="50%" outerRadius="65%" data={radarData}>
+                          <PolarGrid stroke="#e5e7eb" gridType="polygon" />
+                          <PolarAngleAxis dataKey="subject" tick={{fontSize: 11, fontWeight: 'bold', fill: '#475569'}} />
+                          <Radar name="Score" dataKey="A" stroke="#1a73e8" fill="#1a73e8" fillOpacity={0.2} />
+                          <RechartsTooltip contentStyle={{backgroundColor: '#ffffff', borderColor: '#e5e7eb', color: '#1f2937', borderRadius: '8px', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)'}} />
+                        </RadarChart>
+                      </ResponsiveContainer>
+                    );
+                  })()}
+                </div>
+              </div>
+            </div>
+
+            {/* Graphs Row 2 */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              {/* DSA Performance */}
+              <div className="bg-white p-8 rounded-2xl card-shadow border border-outline-variant/10 flex flex-col justify-between">
+                <div>
+                  <div className="mb-6">
+                      <h4 className="text-lg font-extrabold text-on-surface font-headline tracking-tight">DSA performance</h4>
+                      <p className="text-sm text-on-surface-variant">Across all coding challenges</p>
+                  </div>
+                  
+                  <div className="h-48 w-full mb-6">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <BarChart data={[
+                        { name: 'Accepted', value: stats.dsaOutcomes?.accepted || 0, fill: '#34a853' },
+                        { name: 'Wrong answer', value: stats.dsaOutcomes?.wrong_answer || 0, fill: '#fbbc04' },
+                        { name: 'Gave up', value: stats.dsaOutcomes?.gave_up || 0, fill: '#ea4335' }
+                      ]} margin={{ top: 0, right: 0, left: -30, bottom: 0 }}>
+                        <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e5e7eb" />
+                        <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{fontSize: 11, fill: '#64748b', fontWeight: 500}} dy={10} />
+                        <YAxis allowDecimals={false} axisLine={false} tickLine={false} tick={{fontSize: 11, fill: '#64748b', fontWeight: 500}} />
+                        <RechartsTooltip cursor={{fill: '#f8f9fa'}} contentStyle={{backgroundColor: '#ffffff', borderColor: '#e5e7eb', color: '#1f2937', borderRadius: '8px', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)'}} />
+                        <Bar dataKey="value" radius={[4, 4, 0, 0]} maxBarSize={80}>
+                          {
+                            [
+                              { name: 'Accepted', value: stats.dsaOutcomes?.accepted || 0, fill: '#34a853' },
+                              { name: 'Wrong answer', value: stats.dsaOutcomes?.wrong_answer || 0, fill: '#fbbc04' },
+                              { name: 'Gave up', value: stats.dsaOutcomes?.gave_up || 0, fill: '#ea4335' }
+                            ].map((entry, index) => (
+                              <Cell key={`cell-${index}`} fill={entry.fill} />
+                            ))
+                          }
+                        </Bar>
+                      </BarChart>
+                    </ResponsiveContainer>
                   </div>
                 </div>
-                {/* Simplified Visual Chart */}
-                <div className="h-72 w-full mt-4">
-                  {stats.readinessHistory.filter(d => d.hasData).length === 0 ? (
-                      <div className="h-full flex items-center justify-center text-on-surface-variant text-sm italic">
-                          No data yet. Start an interview to see your progress!
-                      </div>
-                  ) : (
+                
+                <div className="border-t border-outline-variant/10 pt-4">
+                  <p className="text-secondary text-xs font-bold uppercase tracking-widest mb-1">Avg solve time</p>
+                  <h3 className="text-3xl font-extrabold text-on-surface font-headline mb-1">{stats.avgDsaSolveTime || 0} min</h3>
+                  <p className="text-secondary text-xs font-medium">Target: under 10 min</p>
+                </div>
+              </div>
+
+              {/* Vocabulary Stacked Bar */}
+              <div className="bg-white p-8 rounded-2xl card-shadow border border-outline-variant/10 flex flex-col justify-between">
+                <div>
+                  <div className="mb-6">
+                      <h4 className="text-lg font-extrabold text-on-surface font-headline tracking-tight">Vocabulary terms used</h4>
+                      <p className="text-sm text-on-surface-variant">Correct vs incorrect per session</p>
+                  </div>
+                  
+                  <div className="h-48 w-full mb-6">
                     <ResponsiveContainer width="100%" height="100%">
-                      <LineChart data={stats.readinessHistory.filter(d => d.hasData).reverse()}>
-                        <CartesianGrid strokeDasharray="3 3" vertical={false} />
-                        <XAxis 
-                          dataKey="date" 
-                          tickFormatter={(str) => new Date(str).toLocaleDateString(undefined, {month: 'short', day: 'numeric'})}
-                          axisLine={false} tickLine={false} tick={{fontSize: 12, fill: '#64748b'}}
-                          dy={10}
-                        />
-                        <YAxis domain={[0, 100]} hide={false} axisLine={false} tickLine={false} tick={{fontSize: 12, fill: '#64748b'}} dx={-10} />
-                        <RechartsTooltip 
-                          labelFormatter={(label) => new Date(label).toLocaleDateString()}
-                          formatter={(value) => [`${value}%`, 'Score']}
-                          contentStyle={{borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)'}}
-                        />
-                        <Line type="monotone" dataKey="score" stroke="#2563eb" strokeWidth={3} dot={{r: 4, fill: '#2563eb'}} activeDot={{r: 6, fill: '#1d4ed8'}} />
-                      </LineChart>
+                      <BarChart data={stats.readinessHistory.filter(d => d.hasData)} margin={{ top: 0, right: 0, left: -20, bottom: 0 }}>
+                        <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e5e7eb" />
+                        <XAxis dataKey="date" tickFormatter={(str) => new Date(str).toLocaleDateString(undefined, {month: 'short', day: 'numeric'})} axisLine={false} tickLine={false} tick={{fontSize: 11, fill: '#64748b', fontWeight: 500}} dy={10} />
+                        <YAxis axisLine={false} tickLine={false} tick={{fontSize: 11, fill: '#64748b', fontWeight: 500}} />
+                        <RechartsTooltip contentStyle={{backgroundColor: '#ffffff', borderColor: '#e5e7eb', color: '#1f2937', borderRadius: '8px', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)'}} />
+                        <Bar dataKey="vocabulary_correct" stackId="a" fill="#34a853" />
+                        <Bar dataKey="vocabulary_incorrect" stackId="a" fill="#ea4335" radius={[4, 4, 0, 0]} />
+                      </BarChart>
                     </ResponsiveContainer>
-                  )}
+                  </div>
                 </div>
-              </div>
-
-              {/* Skill Breakdown Summary */}
-              <div className="bg-white p-8 rounded-2xl card-shadow border border-outline-variant/10 flex flex-col justify-center">
-                <h4 className="text-lg font-extrabold text-on-surface font-headline tracking-tight mb-8">Current Skills</h4>
-                <div className="flex-1 flex flex-col items-center justify-center pt-6">
-                  {stats.totalInterviews === 0 ? (
-                      <div className="text-center text-xs text-on-surface-variant mt-4 italic">
-                          Skills will appear after your first interview.
-                      </div>
-                  ) : (
-                      <div className="h-64 w-full">
-                        <ResponsiveContainer width="100%" height="100%">
-                          <RadarChart outerRadius="70%" data={[
-                            { subject: 'Communication', A: stats.skillBreakdown.communication, fullMark: 100 },
-                            { subject: 'Technical', A: stats.skillBreakdown.technical, fullMark: 100 },
-                            { subject: 'Confidence', A: stats.skillBreakdown.confidence, fullMark: 100 },
-                            { subject: 'Logic', A: stats.skillBreakdown.logic, fullMark: 100 }
-                          ]}>
-                            <PolarGrid gridType="polygon" />
-                            <PolarAngleAxis dataKey="subject" tick={{fontSize: 11, fontWeight: 'bold', fill: '#475569'}} />
-                            <Radar name="Student" dataKey="A" stroke="#2563eb" fill="#3b82f6" fillOpacity={0.5} />
-                            <RechartsTooltip formatter={(value) => [`${value}%`, 'Score']} />
-                          </RadarChart>
-                        </ResponsiveContainer>
-                      </div>
-                  )}
-                </div>
-              </div>
-            </div>
-
-            {/* Detailed Metric Graphs */}
-            {stats.readinessHistory.filter(d => d.hasData).length > 0 && (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                {[
-                    { title: 'Communication', key: 'communication', color: '#3b82f6' },
-                    { title: 'Technical', key: 'technical', color: '#22c55e' },
-                    { title: 'Confidence', key: 'confidence', color: '#a855f7' },
-                    { title: 'Logic', key: 'logic', color: '#f97316' }
-                ].map((metric) => (
-                    <div key={metric.key} className="bg-white p-6 rounded-xl card-shadow border border-outline-variant/10">
-                        <h5 className="text-sm font-bold text-on-surface font-headline mb-4">{metric.title} Trend</h5>
-                        <div className="h-32">
-                          <ResponsiveContainer width="100%" height="100%">
-                            <LineChart data={stats.readinessHistory.filter(d => d.hasData).reverse()}>
-                              <Line type="monotone" dataKey={metric.key} stroke={metric.color} strokeWidth={3} dot={{r: 3, fill: metric.color}} activeDot={{r: 5}} />
-                              <RechartsTooltip 
-                                labelFormatter={(label) => new Date(label).toLocaleDateString()}
-                                formatter={(value) => [`${value}%`, metric.title]}
-                                contentStyle={{borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)', fontSize: '12px'}}
-                              />
-                            </LineChart>
-                          </ResponsiveContainer>
+                
+                {(() => {
+                  const skills = [
+                    { name: 'Technical Depth', score: stats.skillBreakdown.technical },
+                    { name: 'Communication', score: stats.skillBreakdown.communication },
+                    { name: 'Confidence', score: stats.skillBreakdown.confidence },
+                    { name: 'DSA', score: stats.skillBreakdown.logic }
+                  ];
+                  const weakest = skills.sort((a, b) => a.score - b.score)[0];
+                  if (!weakest) return null;
+                  return (
+                    <div className="bg-red-50 border border-red-100 p-4 rounded-xl flex items-center justify-between shadow-sm">
+                      <div className="flex items-center gap-3">
+                        <span className="material-symbols-outlined text-red-500">trending_down</span>
+                        <div>
+                          <h5 className="font-bold text-red-900 text-sm">Focus Area: {weakest.name}</h5>
+                          <p className="text-xs text-red-700 mt-1">Your {weakest.name} score needs improvement. Focus on this area in your next session to raise your overall readiness.</p>
                         </div>
+                      </div>
                     </div>
-                ))}
+                  )
+                })()}
+              </div>
             </div>
-            )}
+
+            {/* Readiness Score Breakdown */}
+            <div className="bg-white p-8 rounded-2xl card-shadow border border-outline-variant/10">
+              <div className="mb-6">
+                  <h4 className="text-lg font-extrabold text-on-surface font-headline tracking-tight">Readiness score breakdown</h4>
+                  <p className="text-sm text-on-surface-variant">How your {stats.readinessScore}% is calculated</p>
+              </div>
+              
+              {(() => {
+                 const latest = stats.readinessHistory.filter(d => d.hasData).slice(-1)[0] || { technical: 0, communication: 0, dsa: 0, problem_solving: 0 };
+                 const bars = [
+                   { name: 'Technical depth', weight: '30%', score: latest.technical, color: 'bg-[#1a73e8]' },
+                   { name: 'Communication', weight: '20%', score: latest.communication, color: 'bg-[#34a853]' },
+                   { name: 'DSA performance', weight: '30%', score: latest.dsa, color: 'bg-[#fbbc04]' },
+                   { name: 'Problem solving', weight: '20%', score: latest.problem_solving, color: 'bg-[#9334e6]' },
+                 ];
+                 return (
+                   <div className="space-y-6 mt-4">
+                     {bars.map((bar, i) => (
+                       <div key={i} className="flex flex-col gap-2">
+                         <div className="flex justify-between items-center text-sm font-medium">
+                           <span className="text-on-surface">{bar.name} <span className="text-secondary text-xs ml-2">({bar.weight} weight)</span></span>
+                           <span className="text-primary font-bold">{bar.score}/10</span>
+                         </div>
+                         <div className="w-full bg-gray-100 h-2 rounded-full overflow-hidden">
+                           <div className={`${bar.color} h-full rounded-full`} style={{width: `${(bar.score / 10) * 100}%`}}></div>
+                         </div>
+                       </div>
+                     ))}
+                   </div>
+                 );
+              })()}
+            </div>
           </div>
-          ) : null}
+) : null}
 
           {activeView === 'history' ? (
             <div className="p-8 max-w-5xl mx-auto">
@@ -430,6 +525,15 @@ export default function Dashboard() {
                                         <div className="flex flex-col items-center justify-center h-full text-on-surface-variant opacity-60">
                                             <span className="material-symbols-outlined text-4xl mb-2">chat_bubble_outline</span>
                                             <p>No transcript available for this session.</p>
+                                        </div>
+                                    )}
+                                    {interview.expected_answer && (
+                                        <div className="mt-8 bg-green-50 border border-green-200 p-5 rounded-2xl">
+                                            <div className="flex items-center gap-2 text-green-800 font-bold mb-2">
+                                                <span className="material-symbols-outlined text-green-600">lightbulb</span>
+                                                Ideal Answer (from AI Evaluator)
+                                            </div>
+                                            <p className="text-sm text-green-900 leading-relaxed whitespace-pre-wrap">{interview.expected_answer}</p>
                                         </div>
                                     )}
                                 </div>
@@ -502,18 +606,30 @@ export default function Dashboard() {
                                 </div>
                                 
                                 <div className="mt-4 flex justify-between items-end border-t border-outline-variant/10 pt-4">
-                                     <div className="hidden md:flex gap-4">
+                                     <div className="hidden md:flex flex-wrap gap-4 max-w-[70%]">
                                          {/* Minimal stats if available */}
-                                         {interview.logicScore && (
+                                         {interview.technicalScore !== undefined && (
                                             <div className="flex items-center gap-2 text-xs">
-                                                <span className="font-bold text-on-surface-variant">Logic:</span>
-                                                <span className="font-bold text-on-surface">{interview.logicScore}%</span>
+                                                <span className="font-bold text-on-surface-variant">Tech:</span>
+                                                <span className="font-bold text-on-surface">{interview.technicalScore}%</span>
                                             </div>
                                          )}
-                                         {interview.communicationScore && (
+                                         {interview.communicationScore !== undefined && (
                                             <div className="flex items-center gap-2 text-xs">
                                                 <span className="font-bold text-on-surface-variant">Comm:</span>
                                                 <span className="font-bold text-on-surface">{interview.communicationScore}%</span>
+                                            </div>
+                                         )}
+                                         {interview.logicScore !== undefined && (
+                                            <div className="flex items-center gap-2 text-xs">
+                                                <span className="font-bold text-on-surface-variant">DSA:</span>
+                                                <span className="font-bold text-on-surface">{interview.logicScore}%</span>
+                                            </div>
+                                         )}
+                                         {interview.confidenceScore !== undefined && (
+                                            <div className="flex items-center gap-2 text-xs">
+                                                <span className="font-bold text-on-surface-variant">Conf:</span>
+                                                <span className="font-bold text-on-surface">{interview.confidenceScore}%</span>
                                             </div>
                                          )}
                                      </div>

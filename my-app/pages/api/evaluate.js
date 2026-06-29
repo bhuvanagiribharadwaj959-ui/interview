@@ -40,16 +40,27 @@ Here is the transcript of the interview:
 ${conversationText}
 
 Please evaluate the candidate strictly and return ONLY a JSON object with the following schema:
-{
-  "readinessScore": <int 0-100>,
-  "vocabularyScore": <int 0-10>,
-  "communicationScore": <int 0-100>,
-  "technicalScore": <int 0-100>,
-  "confidenceScore": <int 0-100>,
-  "logicScore": <int 0-100>,
-  "feedback": "<string: honest, strict paragraph of feedback>",
-  "rating": "<string: Excellent, Good, Fair, Poor, or Needs Work>"
+  "technical_depth": <0-10>,
+  "communication": <0-10>,
+  "dsa_performance": <0-10>,
+  "problem_solving": <0-10>,
+  "confidence": <0-10>,
+  "vocabulary_correct": <count of technical terms used correctly>,
+  "vocabulary_incorrect": <count of technical terms used wrongly>,
+  "dsa_outcome": <"accepted" | "wrong_answer" | "gave_up">,
+  "dsa_solve_time_minutes": <number>,
+  "weak_areas": ["<list of topic strings where score < 5>"],
+  "insight": "<one sentence about the biggest area to improve>",
+  "expected_answer": "<the ideal, model answer the candidate SHOULD have given to the LAST technical question asked>"
 }
+
+Scoring guide:
+- technical_depth: accuracy of "under the hood" answers (Phase 2)
+- communication: clarity, structure, use of examples
+- dsa_performance: 10=accepted+complexity explained, 7=accepted, 4=wrong answer with good approach, 1=gave up
+- problem_solving: quality of system design / stress test answer (Phase 4)
+- confidence: response speed, no filler words, directness
+- expected_answer: give a clear, correct 3-4 sentence answer to the final technical question posed by the interviewer, so the candidate can learn from their mistake.
 
 CRITICAL RULES:
 1. If the candidate struggled, gave wrong answers, or spoke very little, score them VERY harshly (e.g., scores under 30, vocab 1-3).
@@ -97,7 +108,7 @@ CRITICAL RULES:
       console.error("Failed to parse evaluation JSON:", data.choices?.[0]?.message?.content);
     }
     
-    if (parsedData && parsedData.readinessScore !== undefined) {
+    if (parsedData && parsedData.technical_depth !== undefined) {
        return res.status(200).json(parsedData);
     }
 
@@ -111,16 +122,19 @@ CRITICAL RULES:
 
 function generateFallbackScores(wordCount) {
   // If the Groq API fails, we use a harsh fallback based on word count
-  const base = Math.min(50, Math.max(10, wordCount));
+  const base10 = Math.min(10, Math.max(1, Math.floor(wordCount / 20)));
 
   return {
-    readinessScore: base,
-    vocabularyScore: Math.floor(base / 10),
-    communicationScore: base + 5,
-    technicalScore: Math.max(0, base - 10),
-    confidenceScore: base,
-    logicScore: base,
-    feedback: "The evaluation API encountered an error. This is a fallback score based on transcript length.",
-    rating: base > 40 ? "Fair" : "Needs Work"
+    technical_depth: base10,
+    communication: Math.min(10, base10 + 2),
+    dsa_performance: base10,
+    problem_solving: base10,
+    confidence: base10,
+    vocabulary_correct: Math.floor(wordCount / 50),
+    vocabulary_incorrect: 2,
+    dsa_outcome: "wrong_answer",
+    dsa_solve_time_minutes: 15,
+    weak_areas: ["Algorithms"],
+    insight: "The evaluation API encountered an error. This is a fallback score based on transcript length."
   };
 }

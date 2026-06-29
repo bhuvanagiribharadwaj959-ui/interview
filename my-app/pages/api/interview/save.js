@@ -36,10 +36,23 @@ export default async function handler(req, res) {
     codingEvents,
     startedAt,
     endedAt,
-    resumeId
+    resumeId,
+    technical_depth,
+    communication,
+    dsa_performance,
+    problem_solving,
+    confidence,
+    vocabulary_correct,
+    vocabulary_incorrect,
+    dsa_outcome,
+    dsa_solve_time_minutes,
+    weak_areas,
+    insight,
+    expected_answer
   } = req.body;
 
-  if (readinessScore === undefined) {
+  // We no longer strictly require readinessScore if new fields exist
+  if (technical_depth === undefined && readinessScore === undefined) {
     return res.status(400).json({ error: 'Missing interview data' });
   }
 
@@ -76,6 +89,20 @@ export default async function handler(req, res) {
       transcript,
       codingEvents: Array.isArray(codingEvents) ? codingEvents : [],
       endedAtLegacy: endedAt ? new Date(endedAt).toISOString() : new Date().toISOString(),
+      
+      // New schema fields
+      technical_depth: technical_depth || 0,
+      communication_new: communication || 0,
+      dsa_performance: dsa_performance || 0,
+      problem_solving: problem_solving || 0,
+      confidence_new: confidence || 0,
+      vocabulary_correct: vocabulary_correct || 0,
+      vocabulary_incorrect: vocabulary_incorrect || 0,
+      dsa_outcome: dsa_outcome || 'none',
+      dsa_solve_time_minutes: dsa_solve_time_minutes || 0,
+      weak_areas: Array.isArray(weak_areas) ? weak_areas : [],
+      insight: insight || '',
+      expected_answer: expected_answer || ''
     };
 
     if (resumeId) updatedData.resumeId = resumeId;

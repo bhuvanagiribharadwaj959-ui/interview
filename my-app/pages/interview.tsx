@@ -43,6 +43,11 @@ export default function Interview() {
   const [isCodeEditorActive, setIsCodeEditorActive] = useState(false);
   const [currentQuestion, setCurrentQuestion] = useState("Initializing AI Interviewer...");
   const [conversationHistory, setConversationHistory] = useState<any[]>([]);
+  const conversationHistoryRef = useRef<any[]>([]);
+  
+  useEffect(() => {
+    conversationHistoryRef.current = conversationHistory;
+  }, [conversationHistory]);
   const [codingEvents, setCodingEvents] = useState<any[]>([]);
   const [historicalSolvedTitles, setHistoricalSolvedTitles] = useState<string[]>([]);
   const [sessionSolvedTitles, setSessionSolvedTitles] = useState<string[]>([]);
@@ -67,6 +72,7 @@ export default function Interview() {
   const [timer, setTimer] = useState(0);
   const [timerActive, setTimerActive] = useState(false);
   const [showCodeEditorButton, setShowCodeEditorButton] = useState(false);
+  const [isSpacePressed, setIsSpacePressed] = useState(false);
   
   // Session and Resume tracking
   const [interviewId, setInterviewId] = useState<string | null>(null);
@@ -214,9 +220,10 @@ export default function Interview() {
   };
 
   const handleAiInteraction = async (transcript: string = "", options: { forceSpeak?: boolean } = {}) => {
+    let currentHistory = conversationHistoryRef.current;
     let updatedHistory = transcript
-      ? [...conversationHistory, createMessage('user', transcript)]
-      : conversationHistory;
+      ? [...currentHistory, createMessage('user', transcript)]
+      : currentHistory;
       
     // If it's the very first interaction and no transcript, inject a secret start prompt
     if (!transcript && updatedHistory.length === 0) {
@@ -509,20 +516,19 @@ Rules of Conduct:
     loadSolvedHistory();
   }, []);
   
+  // Mic initialization effect
   useEffect(() => {
     let isCurrent = true;
 
-    if (interviewState !== 'listening' || isMuted) {
+    // Only init mic if we are in the interview step and not muted
+    if (step !== STEPS.INTERVIEW || isMuted) {
       return;
     }
 
     let localStream: MediaStream | null = null;
     let mediaRecorder: MediaRecorder | null = null;
-    let audioContext: AudioContext | null = null;
-    let analyser: AnalyserNode | null = null;
-    let checkInterval: NodeJS.Timeout;
 
-    const startRecording = async () => {
+    const setupMic = async () => {
       try {
         localStream = await navigator.mediaDevices.getUserMedia({ audio: true });
         if (!isCurrent) {
@@ -533,8 +539,7 @@ Rules of Conduct:
 
         mediaRecorder = new MediaRecorder(localStream, { mimeType: 'audio/webm' });
         mediaRecorderRef.current = mediaRecorder;
-        audioChunksRef.current = [];
-
+        
         mediaRecorder.ondataavailable = (event) => {
           if (event.data.size > 0) {
             audioChunksRef.current.push(event.data);
@@ -542,133 +547,90 @@ Rules of Conduct:
         };
 
         mediaRecorder.onstop = async () => {
-          if (!isCurrent) return;
           if (audioChunksRef.current.length === 0) return;
           
           const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/webm' });
           
-          if (hasSpoken) {
-            setInterviewState('analyzing');
-            try {
-              const res = await fetch('/api/transcribe', {
-                method: 'POST',
-                headers: {
-                  'Content-Type': 'audio/webm'
-                },
-                body: audioBlob
-              });
-              
-              if (!isCurrent) return;
-
-              if (res.ok) {
-                const data = await res.json();
-                if (data.transcript && data.transcript.trim()) {
-                  handleAiInteraction(data.transcript.trim());
-                } else {
-                  setInterviewState('listening');
-                }
+          setInterviewState('analyzing');
+          try {
+            const res = await fetch('/api/transcribe', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'audio/webm'
+              },
+              body: audioBlob
+            });
+            
+            if (res.ok) {
+              const data = await res.json();
+              if (data.transcript && data.transcript.trim()) {
+                handleAiInteraction(data.transcript.trim());
               } else {
                 setInterviewState('listening');
               }
-            } catch (err) {
-              console.error("Transcription error:", err);
-              if (isCurrent) {
-                setInterviewState('listening');
-              }
+            } else {
+              setInterviewState('listening');
             }
+          } catch (err) {
+            console.error("Transcription error:", err);
+            setInterviewState('listening');
           }
         };
-
-        mediaRecorder.start();
-
-        const AudioContextClass = window.AudioContext || (window as any).webkitAudioContext;
-        audioContext = new AudioContextClass();
-        audioContextRef.current = audioContext;
-
-        if (audioContext.state === 'suspended') {
-          // Do not await this, as it may hang indefinitely if the browser blocks it without a user gesture.
-          // MediaRecorder will still capture the audio correctly even if Analyser fails.
-          audioContext.resume().catch(e => console.warn('AudioContext resume failed:', e));
-        }
-
-        const source = audioContext.createMediaStreamSource(localStream);
-        analyser = audioContext.createAnalyser();
-        analyser.fftSize = 512;
-        analyserRef.current = analyser;
-        source.connect(analyser);
-
-        const bufferLength = analyser.frequencyBinCount;
-        const dataArray = new Uint8Array(bufferLength);
-
-        const silenceThreshold = 5; // Lowered threshold to pick up quieter voices
-        let silenceStart = Date.now();
-        let hasSpoken = false;
-        let recordingStart = Date.now();
-
-        checkInterval = setInterval(() => {
-          if (!analyser || !isCurrent) return;
-          analyser.getByteFrequencyData(dataArray);
-
-          let sum = 0;
-          for (let i = 0; i < bufferLength; i++) {
-            sum += dataArray[i];
-          }
-          const averageVolume = sum / bufferLength;
-          const now = Date.now();
-
-          // Safety fallback 1: Force stop after 45 seconds of continuous recording
-          if (now - recordingStart > 45000) {
-            hasSpoken = true;
-            clearInterval(checkInterval);
-            if (mediaRecorder && mediaRecorder.state !== 'inactive') mediaRecorder.stop();
-            localStream?.getTracks().forEach(track => track.stop());
-            return;
-          }
-
-          if (averageVolume > silenceThreshold) {
-            hasSpoken = true;
-            silenceStart = now;
-          } else {
-            // Normal flow: Stop if they spoke and were silent for 2.5 seconds
-            if (hasSpoken && now - silenceStart > 2500) {
-              clearInterval(checkInterval);
-              if (mediaRecorder && mediaRecorder.state !== 'inactive') mediaRecorder.stop();
-              localStream?.getTracks().forEach(track => track.stop());
-            } 
-            // Safety fallback 2: If no sound detected for 10 seconds, reset the loop
-            else if (!hasSpoken && now - silenceStart > 10000) {
-              hasSpoken = true; // Send empty audio to naturally loop back to listening
-              clearInterval(checkInterval);
-              if (mediaRecorder && mediaRecorder.state !== 'inactive') mediaRecorder.stop();
-              localStream?.getTracks().forEach(track => track.stop());
-            }
-          }
-        }, 100);
-
       } catch (err) {
         console.error("Failed to start recording:", err);
-        if (isCurrent) {
-          setInterviewState('idle');
-        }
       }
     };
 
-    startRecording();
+    setupMic();
 
     return () => {
       isCurrent = false;
-      clearInterval(checkInterval);
       if (mediaRecorder && mediaRecorder.state !== 'inactive') {
         try { mediaRecorder.stop(); } catch {}
       }
       if (localStream) {
         try { localStream.getTracks().forEach(track => track.stop()); } catch {}
       }
-      if (audioContext) {
-        try { audioContext.close(); } catch {}
+    };
+  }, [step, isMuted]); // removed interviewState so stream stays open
+
+  // Spacebar listeners
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) return;
+
+      if (e.code === 'Space' && step === STEPS.INTERVIEW && interviewState === 'listening' && !isMuted) {
+        e.preventDefault();
+        if (!isSpacePressed) {
+          setIsSpacePressed(true);
+          audioChunksRef.current = [];
+          if (mediaRecorderRef.current && mediaRecorderRef.current.state === 'inactive') {
+            mediaRecorderRef.current.start();
+          }
+        }
       }
     };
-  }, [interviewState, isMuted]);
+
+    const handleKeyUp = (e: KeyboardEvent) => {
+      if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) return;
+
+      if (e.code === 'Space' && isSpacePressed) {
+        e.preventDefault();
+        setIsSpacePressed(false);
+        if (mediaRecorderRef.current && mediaRecorderRef.current.state !== 'inactive') {
+          mediaRecorderRef.current.stop();
+        }
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    window.addEventListener('keyup', handleKeyUp);
+    
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+      window.removeEventListener('keyup', handleKeyUp);
+    };
+  }, [step, interviewState, isMuted, isSpacePressed]);
 
   useEffect(() => {
     return () => {
@@ -947,7 +909,7 @@ Rules of Conduct:
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          transcript: conversationHistory,
+          transcript: conversationHistoryRef.current,
           type: interviewType,
           difficulty: 'Medium'
         })
@@ -962,17 +924,32 @@ Rules of Conduct:
         type: interviewType,
         difficulty: 'Medium',
         duration: `${Math.floor(timer / 60)} min`,
-        readinessScore: evalData.readinessScore || 70,
-        vocabularyScore: evalData.vocabularyScore || 7,
-        communicationScore: evalData.communicationScore || 75,
-        technicalScore: evalData.technicalScore || 65,
-        confidenceScore: evalData.confidenceScore || 70,
-        logicScore: evalData.logicScore || 68,
-        rating: evalData.rating || 'Good',
-        feedback: evalData.feedback || 'Good effort, but try to be more specific.',
-        transcript: conversationHistory,
+        // Mapping new evaluation schema
+        technical_depth: evalData.technical_depth || 0,
+        communication: evalData.communication || 0,
+        dsa_performance: evalData.dsa_performance || 0,
+        problem_solving: evalData.problem_solving || 0,
+        confidence: evalData.confidence || 0,
+        vocabulary_correct: evalData.vocabulary_correct || 0,
+        vocabulary_incorrect: evalData.vocabulary_incorrect || 0,
+        dsa_outcome: evalData.dsa_outcome || 'gave_up',
+        dsa_solve_time_minutes: evalData.dsa_solve_time_minutes || 0,
+        weak_areas: evalData.weak_areas || [],
+        insight: evalData.insight || '',
+        expected_answer: evalData.expected_answer || '',
+        
+        // Legacy fields for backward compatibility
+        readinessScore: Math.round(((evalData.technical_depth||0)*30 + (evalData.communication||0)*20 + (evalData.dsa_performance||0)*30 + (evalData.problem_solving||0)*20) / 10),
+        vocabularyScore: evalData.vocabulary_correct || 0,
+        communicationScore: (evalData.communication || 0) * 10,
+        technicalScore: (evalData.technical_depth || 0) * 10,
+        confidenceScore: (evalData.confidence || 0) * 10,
+        logicScore: (evalData.dsa_performance || 0) * 10,
+        rating: 'Good',
+        
+        transcript: conversationHistoryRef.current,
         codingEvents,
-        startedAt: conversationHistory[0]?.createdAt || null,
+        startedAt: conversationHistoryRef.current[0]?.createdAt || null,
         endedAt: new Date().toISOString()
       };
 
@@ -995,8 +972,37 @@ Rules of Conduct:
   };
 
   const renderAiOrb = () => (
-    <div className="flex flex-col items-center h-full min-h-[560px] py-8 sm:py-10">
+    <div className="flex flex-col items-center h-full min-h-[560px] py-8 sm:py-10 relative">
       
+      {/* Hold Space to Speak Indicator */}
+      <motion.div 
+        initial={{ opacity: 0, x: -20 }}
+        animate={{ opacity: 1, x: 0 }}
+        className="absolute top-0 left-0 sm:-left-4 sm:-top-4 flex items-center gap-3 bg-white/90 backdrop-blur shadow-md px-4 py-2.5 rounded-2xl border border-gray-100 z-50 transition-all duration-300"
+      >
+        <div className="relative flex items-center justify-center">
+          {isSpacePressed && (
+             <motion.div 
+               initial={{ scale: 0.8, opacity: 0.5 }}
+               animate={{ scale: 1.5, opacity: 0 }}
+               transition={{ repeat: Infinity, duration: 1 }}
+               className="absolute inset-0 bg-[#ea4335] rounded-full"
+             />
+          )}
+          <div className={`relative w-10 h-10 rounded-full flex items-center justify-center transition-colors duration-300 ${isSpacePressed ? 'bg-[#ea4335] text-white shadow-lg' : 'bg-[#f1f3f4] text-[#5f6368]'}`}>
+            <Mic size={20} />
+          </div>
+        </div>
+        <div className="flex flex-col text-left">
+          <span className="text-sm font-semibold text-[#202124]">
+            {isSpacePressed ? 'Recording...' : 'Hold Space'}
+          </span>
+          <span className="text-[11px] text-[#5f6368]">
+            {isSpacePressed ? 'Release to send' : 'to speak'}
+          </span>
+        </div>
+      </motion.div>
+
       {/* Session Timer & Indicator */}
       <div className="mb-5 sm:mb-6 flex flex-col items-center gap-3">
         <div className="google-equalizer">
