@@ -21,6 +21,9 @@ export default function Dashboard() {
     vocabularyScore: 0,
     totalInterviews: 0,
     currentStreak: 0,
+    bestStreak: 0,
+    avgDsaSolveTime: 0,
+    dsaOutcomes: { accepted: 0, wrong_answer: 0, gave_up: 0 },
     skillBreakdown: {
       communication: 0,
       technical: 0,
