@@ -1,15 +1,11 @@
-<svg width="512" height="512" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
-  <!-- Background -->
-  <rect width="512" height="512" fill="#1a3340" />
+<svg width="512" height="512" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- White Box Background -->
+  <rect width="512" height="512" rx="100" fill="#FFFFFF"/>
+  <rect x="8" y="8" width="496" height="496" rx="92" stroke="#E2E8F0" stroke-width="16"/>
   
-  <!-- Layer 1: Long diagonal shadow -->
-  <rect x="96" y="96" width="360" height="360" rx="48" fill="#12272f" />
+  <!-- Blue Icon Mark -->
+  <rect x="116" y="116" width="280" height="280" rx="60" fill="#2563EB"/>
   
-  <!-- Layer 2: Orange rounded square tile -->
-  <rect x="76" y="56" width="360" height="360" rx="48" fill="#F97316" />
-  
-  <!-- Layer 3: Letter U -->
-  <rect x="148" y="148" width="60" height="180" rx="12" fill="#1e2d2f" />
-  <rect x="304" y="148" width="60" height="180" rx="12" fill="#1e2d2f" />
-  <path d="M148 288 Q148 380 256 380 Q364 380 364 288" stroke="#1e2d2f" stroke-width="60" fill="none" stroke-linecap="round" />
+  <!-- White Square Accent inside Blue Icon -->
+  <rect x="216" y="216" width="80" height="80" rx="20" fill="#FFFFFF"/>
 </svg>

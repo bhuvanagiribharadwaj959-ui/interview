@@ -307,7 +307,7 @@ const Hero: React.FC = () => {
 
       {/* Features Section */}
       <section id="features" className="features-section split-section">
-        <div className="split-left reveal" style={{ position: 'relative', height: '550px' }}>
+        <div className="split-left reveal">
             {/* Code Editor Mockup */}
             <div className="mockup-editor reveal" data-delay="100">
               <div className="window-header">
@@ -322,8 +322,7 @@ const Hero: React.FC = () => {
                   <span className={`tab ${activeTab === 'cpp' ? 'active' : ''}`} onClick={() => handleTabClick('cpp')}>solution.cpp</span>
                 </div>
                 <button 
-                  className="btn-primary" 
-                  style={{ padding: '0.3rem 0.8rem', fontSize: '0.8rem', marginLeft: 'auto' }}
+                  className="btn-primary btn-submit-code" 
                   onClick={() => handleGenerateQuestion(code, activeTab)}
                   disabled={loadingQuestion}
                 >
@@ -336,21 +335,8 @@ const Hero: React.FC = () => {
                   onChange={(e) => setCode(e.target.value)}
                   className="code-editor-textarea"
                   spellCheck={false}
-                  style={{
-                    width: '100%',
-                    height: '100%',
-                    border: 'none',
-                    resize: 'none',
-                    outline: 'none',
-                    fontFamily: "'Monaco', 'Consolas', monospace",
-                    fontSize: '0.85rem',
-                    lineHeight: '1.6',
-                    color: 'var(--text-main)',
-                    background: 'transparent',
-                    padding: '0 0 0 2.5rem' // Make room for fake line numbers
-                  }}
                 />
-                <div className="line-numbers" style={{ position: 'absolute', top: '1rem', left: '1rem', bottom: 0, padding: 0 }}>
+                <div className="line-numbers">
                   {code.split('\n').map((_, i) => <span key={i}>{i + 1}</span>)}
                 </div>
               </div>
@@ -387,7 +373,7 @@ const Hero: React.FC = () => {
         </div>
 
         <div className="split-right reveal">
-          <div className="section-header" style={{ textAlign: 'left', margin: '0 0 3rem 0' }}>
+          <div className="section-header split-header">
             <h2>Enterprise Tools for Career Advancement</h2>
             <p>Everything you need to go from application to offer letter.</p>
           </div>

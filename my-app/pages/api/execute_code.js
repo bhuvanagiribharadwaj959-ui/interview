@@ -81,8 +81,16 @@ export default async function handler(req, res) {
   try {
     const { language, code, input = '', testCases = [] } = req.body || {};
 
-    if (!language || !code) {
-      return res.status(400).json({ error: 'Language and code are required.' });
+    if (!language || typeof language !== 'string' || !code || typeof code !== 'string') {
+      return res.status(400).json({ error: 'Language and code strings are required.' });
+    }
+
+    if (code.length > 20000) {
+      return res.status(400).json({ error: 'Code size exceeds maximum limit of 20KB.' });
+    }
+
+    if (Array.isArray(testCases) && testCases.length > 20) {
+      return res.status(400).json({ error: 'Test cases count exceeds maximum limit of 20.' });
     }
 
     const langConfig = languageMap[language.toLowerCase()];

@@ -87,21 +87,26 @@ body.editor-page {
 }
 
 /* Custom Scrollbar */
-::-webkit-scrollbar {
+.editor-layout ::-webkit-scrollbar,
+.editor-page ::-webkit-scrollbar {
   width: 8px;
   height: 8px;
 }
-::-webkit-scrollbar-track {
+.editor-layout ::-webkit-scrollbar-track,
+.editor-page ::-webkit-scrollbar-track {
   background: transparent;
 }
-::-webkit-scrollbar-thumb {
+.editor-layout ::-webkit-scrollbar-thumb,
+.editor-page ::-webkit-scrollbar-thumb {
   background: rgba(148, 163, 184, 0.4);
   border-radius: 4px;
 }
-::-webkit-scrollbar-thumb:hover {
+.editor-layout ::-webkit-scrollbar-thumb:hover,
+.editor-page ::-webkit-scrollbar-thumb:hover {
   background-color: rgba(100, 116, 139, 0.6);
 }
-::-webkit-scrollbar-corner {
+.editor-layout ::-webkit-scrollbar-corner,
+.editor-page ::-webkit-scrollbar-corner {
   background: transparent;
 }
 

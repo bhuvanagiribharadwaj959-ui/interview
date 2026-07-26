@@ -3,14 +3,22 @@ export default async function handler(req, res) {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
-  const { transcript, type, difficulty } = req.body;
+  const { transcript, type, difficulty } = req.body || {};
 
   if (!transcript || !Array.isArray(transcript)) {
-    return res.status(400).json({ error: 'Invalid transcript' });
+    return res.status(400).json({ error: 'Invalid transcript array' });
   }
 
+  // Filter valid transcript entries and truncate overly large content strings
+  const sanitizedTranscript = transcript
+    .filter(m => m && typeof m === 'object' && typeof m.content === 'string')
+    .map(m => ({
+      role: String(m.role || 'candidate').slice(0, 20),
+      content: String(m.content).slice(0, 5000)
+    }));
+
   // Check how much the candidate actually spoke
-  const candidateWords = transcript
+  const candidateWords = sanitizedTranscript
     .filter(m => m.role === 'user' || m.role === 'candidate')
     .map(m => m.content)
     .join(' ')
@@ -32,7 +40,7 @@ export default async function handler(req, res) {
     });
   }
 
-  let conversationText = transcript.map(m => `${m.role === 'assistant' || m.role === 'ai' ? 'Interviewer' : 'Candidate'}: ${m.content}`).join('\n');
+  let conversationText = sanitizedTranscript.map(m => `${m.role === 'assistant' || m.role === 'ai' ? 'Interviewer' : 'Candidate'}: ${m.content}`).join('\n');
 
   const systemPrompt = `You are an expert strict technical interviewer evaluating a candidate's interview.
 The interview type was "${type}" at "${difficulty}" difficulty.

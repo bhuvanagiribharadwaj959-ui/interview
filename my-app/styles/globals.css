@@ -83,7 +83,7 @@
   box-sizing: border-box;
 }
 
-html, body {
+html {
   background-color: var(--vscode-bg);
   color: var(--vscode-text);
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
@@ -92,28 +92,38 @@ html, body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   scroll-behavior: smooth;
+  overflow-x: clip;
+  overflow-y: auto;
+}
+
+body {
+  background-color: inherit;
+  color: inherit;
+  font-family: inherit;
+  overflow-x: clip;
+  overflow-y: visible;
 }
 
 code, pre {
   font-family: 'Fira Code', 'Monaco', 'Courier New', monospace;
 }
 
-/* Scrollbar styling */
-::-webkit-scrollbar {
-  width: 12px;
-  height: 12px;
+/* Scrollbar styling for code components */
+.vscode-theme ::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
 }
 
-::-webkit-scrollbar-track {
+.vscode-theme ::-webkit-scrollbar-track {
   background: var(--vscode-bg);
 }
 
-::-webkit-scrollbar-thumb {
+.vscode-theme ::-webkit-scrollbar-thumb {
   background: var(--vscode-editor);
-  border-radius: 6px;
+  border-radius: 5px;
 }
 
-::-webkit-scrollbar-thumb:hover {
+.vscode-theme ::-webkit-scrollbar-thumb:hover {
   background: var(--vscode-input);
 }
 
