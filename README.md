@@ -1,21 +1,21 @@
-# 🎯 AI Interview & Coding Platform (UdyogaPrep)
+# AI Interview & Coding Platform (UdyogaPrep)
 
 An end-to-end, high-pressure AI Interview Workspace combining natural voice dialogue, resume parsing, multi-phase technical grilling, dynamic Monaco code editor, and multi-language online compilation powered by **Judge0 API** and **Microsoft Edge TTS**.
 
 ---
 
-## 📸 Interface Screenshots
+## Interface Screenshots
 
 > [!NOTE]  
 > *Screenshot Placeholders: Upload your application screenshots to a `screenshots/` directory (or update image paths below) once taken.*
 
-| 🎙️ AI Voice Interviewer | 💻 Monaco Code Editor & Compiler |
+| AI Voice Interviewer | Monaco Code Editor & Compiler |
 | :---: | :---: |
 | ![AI Voice Interview Interface](./screenshots/interview_interface.png)<br><sub>*Interactive Voice & Speech AI Interview Workspace*</sub> | ![Monaco Code Editor & Compiler Interface](./screenshots/compiler_interface.png)<br><sub>*Monaco Code Editor with Judge0 API Multi-Language Execution*</sub> |
 
 ---
 
-## 🎙️ Text-to-Speech (TTS) Engine Details
+## Text-to-Speech (TTS) Engine Details
 
 The application utilizes a robust hybrid TTS architecture:
 
@@ -30,7 +30,7 @@ The application utilizes a robust hybrid TTS architecture:
 
 ---
 
-## ⚡ Code Compilation & Execution API
+## Code Compilation & Execution API
 
 Code compilation and test case execution are powered by the **Judge0 API Engine**:
 
@@ -53,45 +53,45 @@ Code compilation and test case execution are powered by the **Judge0 API Engine*
 
 ---
 
-## 🔄 Complete Interview Process Workflow
+## Complete Interview Process Workflow
 
 The platform delivers a structured 5-phase interview progression tailored to the candidate's resume and target job role.
 
 ```
-┌─────────────────────────────────────────────────────────────────────────────┐
-│                            ONBOARDING & SETUP                               │
-│  1. Select Goal (Internship vs. Job Role)                                   │
-│  2. Upload & Parse Resume (PDF/DOCX via pdf-parse)                          │
-│  3. Optional Job Description Input                                          │
-└──────────────────────────────────────┬──────────────────────────────────────┘
-                                       │
-                                       ▼
-┌─────────────────────────────────────────────────────────────────────────────┐
-│                       5-PHASE AI INTERVIEW WORKFLOW                         │
-├─────────────────────────────────────────────────────────────────────────────┤
-│  Phase 1: The Hook        ➔ Identify tech stack & candidate core domain     │
-│  Phase 2: Deep Dive       ➔ 2-3 "Under-the-hood" core concepts (e.g. GIL)   │
-│  Phase 3: The Build       ➔ Resume project architecture & implementation    │
-│  Phase 4: The Stress Test ➔ System design scalability & bottleneck challenge│
-│  Phase 5: The DSA Challenge ➔ Formulate LeetCode Medium/Hard DSA problem     │
-└──────────────────────────────────────┬──────────────────────────────────────┘
-                                       │
-                                       ▼
-┌─────────────────────────────────────────────────────────────────────────────┐
-│                      MONACO EDITOR & JUDGE0 COMPILER                        │
-│  1. Candidate clicks "Open Code Editor" (opens /editor in new tab)          │
-│  2. Write code with Monaco IntelliSense & multi-language support            │
-│  3. Run test cases against Judge0 API endpoint                              │
-│  4. Submit solution (sends ATTEMPT_VERDICT back to AI session)              │
-└──────────────────────────────────────┬──────────────────────────────────────┘
-                                       │
-                                       ▼
-┌─────────────────────────────────────────────────────────────────────────────┐
-│                       AI CODE REVIEW & ANALYTICS                            │
-│  1. AI reviews code logic, time/space complexity, & edge cases              │
-│  2. Spoken voice feedback via Edge TTS                                      │
-│  3. Save session results, scores, & metrics to Dashboard                    │
-└─────────────────────────────────────────────────────────────────────────────┘
+
+                            ONBOARDING & SETUP                               
+  1. Select Goal (Internship vs. Job Role)                                   
+  2. Upload & Parse Resume (PDF/DOCX via pdf-parse)                          
+  3. Optional Job Description Input                                          
+
+                                       
+                                       
+
+                       5-PHASE AI INTERVIEW WORKFLOW                         
+
+  Phase 1: The Hook         Identify tech stack & candidate core domain     
+  Phase 2: Deep Dive        2-3 "Under-the-hood" core concepts (e.g. GIL)   
+  Phase 3: The Build        Resume project architecture & implementation    
+  Phase 4: The Stress Test  System design scalability & bottleneck challenge
+  Phase 5: The DSA Challenge  Formulate LeetCode Medium/Hard DSA problem     
+
+                                       
+                                       
+
+                      MONACO EDITOR & JUDGE0 COMPILER                        
+  1. Candidate clicks "Open Code Editor" (opens /editor in new tab)          
+  2. Write code with Monaco IntelliSense & multi-language support            
+  3. Run test cases against Judge0 API endpoint                              
+  4. Submit solution (sends ATTEMPT_VERDICT back to AI session)              
+
+                                       
+                                       
+
+                       AI CODE REVIEW & ANALYTICS                            
+  1. AI reviews code logic, time/space complexity, & edge cases              
+  2. Spoken voice feedback via Edge TTS                                      
+  3. Save session results, scores, & metrics to Dashboard                    
+
 ```
 
 ### Detailed Step-by-Step Breakdown:
@@ -124,31 +124,31 @@ The platform delivers a structured 5-phase interview progression tailored to the
 
 ---
 
-## 📁 Project Architecture
+## Project Architecture
 
 ```
 .
-├── my-app/                 # Next.js Full-Stack Application
-│   ├── pages/              # App Pages
-│   │   ├── interview.tsx   # Interactive AI Voice Interviewer workspace
-│   │   ├── editor.tsx      # Monaco Code Editor page
-│   │   ├── dashboard.tsx   # Performance analytics & past interviews
-│   │   └── api/            # API Endpoints
-│   │       ├── execute_code.js  # Judge0 API code execution bridge
-│   │       ├── tts.js           # Edge TTS audio generator API
-│   │       ├── transcribe.js    # Whisper speech-to-text API
-│   │       ├── parse-resume.js  # PDF/DOCX resume text extractor
-│   │       └── chat.js          # AI interviewer core reasoning route
-│   ├── components/         # Reusable UI & Monaco Editor components
-│   └── styles/             # Modern CSS & Tailwind styling
-├── TTS.ipynb               # Local GPU TTS notebook & ngrok tunnel setup
-├── INTERVIEW_IMPROVEMENTS.md # Comprehensive flow improvements changelog
-└── README.md               # Main project documentation
+ my-app/                 # Next.js Full-Stack Application
+    pages/              # App Pages
+       interview.tsx   # Interactive AI Voice Interviewer workspace
+       editor.tsx      # Monaco Code Editor page
+       dashboard.tsx   # Performance analytics & past interviews
+       api/            # API Endpoints
+           execute_code.js  # Judge0 API code execution bridge
+           tts.js           # Edge TTS audio generator API
+           transcribe.js    # Whisper speech-to-text API
+           parse-resume.js  # PDF/DOCX resume text extractor
+           chat.js          # AI interviewer core reasoning route
+    components/         # Reusable UI & Monaco Editor components
+    styles/             # Modern CSS & Tailwind styling
+ TTS.ipynb               # Local GPU TTS notebook & ngrok tunnel setup
+ INTERVIEW_IMPROVEMENTS.md # Comprehensive flow improvements changelog
+ README.md               # Main project documentation
 ```
 
 ---
 
-## 🚀 Local Setup Guide
+## Local Setup Guide
 
 1. **Clone the Repository**:
    ```bash
