@@ -106,7 +106,10 @@ export default function Dashboard() {
         if (!res.ok) throw new Error('Failed to fetch stats');
 
         const data = await res.json();
-        setStats(data);
+        setStats(prev => ({
+          ...data,
+          userName: (data.userName && data.userName !== 'Student') ? data.userName : prev.userName
+        }));
       } catch (err: any) {
         console.error(err);
         setError(err.message);
@@ -126,6 +129,10 @@ export default function Dashboard() {
         router.push('/verify-email');
         return;
       }
+
+      const rawName = user.displayName || (user.email ? user.email.split('@')[0] : 'Student');
+      const formattedName = rawName.charAt(0).toUpperCase() + rawName.slice(1);
+      setStats(prev => ({ ...prev, userName: formattedName }));
 
       let token = localStorage.getItem('authToken');
       if (!token || token === 'undefined' || token === 'null') {

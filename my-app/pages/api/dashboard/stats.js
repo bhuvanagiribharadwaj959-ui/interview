@@ -20,42 +20,45 @@ export default async function handler(req, res) {
   }
 
   const userId = decoded.id; 
-  const userName = decoded.name || 'Student'; // Add user name to response, fallback to Student
+  const rawName = decoded.name || (decoded.email ? decoded.email.split('@')[0] : 'Student');
+  // Capitalize nicely if it's an email prefix or plain string
+  const userName = rawName.charAt(0).toUpperCase() + rawName.slice(1);
+
+  const stats = {
+    userName,
+    readinessScore: 0,
+    vocabularyScore: 0,
+    totalInterviews: 0,
+    currentStreak: 0,
+    skillBreakdown: {
+      communication: 0,
+      technical: 0,
+      confidence: 0,
+      logic: 0
+    },
+    readinessHistory: [],
+    recentActivity: [],
+    latestGoodTerms: [],
+    latestMissedTerms: [],
+    dsaOutcomes: { accepted: 0, wrong_answer: 0, gave_up: 0 },
+    avgDsaSolveTime: 0,
+    bestStreak: 0
+  };
 
   try {
-        const interviewsRef = collection(db, 'users', userId, 'sessions');
-    const q = query(interviewsRef);
-    const querySnapshot = await getDocs(q);
-
-    // Fetch all interviews for this user
-    let interviews = querySnapshot.docs.map(doc => ({
-      _id: doc.id,
-      ...doc.data()
-    }));
-    
-    interviews.sort((a, b) => new Date(b.date || b.startTime || 0) - new Date(a.date || a.startTime || 0));
-
-    // Default zero state
-    const stats = {
-      userName, // Return user name
-      readinessScore: 0,
-      vocabularyScore: 0,
-      totalInterviews: 0,
-      currentStreak: 0,
-      skillBreakdown: {
-        communication: 0,
-        technical: 0,
-        confidence: 0,
-        logic: 0
-      },
-      readinessHistory: [], // For the chart
-      recentActivity: [],
-      latestGoodTerms: [],
-      latestMissedTerms: [],
-      dsaOutcomes: { accepted: 0, wrong_answer: 0, gave_up: 0 },
-      avgDsaSolveTime: 0,
-      bestStreak: 0
-    };
+    let interviews = [];
+    try {
+      const interviewsRef = collection(db, 'users', userId, 'sessions');
+      const q = query(interviewsRef);
+      const querySnapshot = await getDocs(q);
+      interviews = querySnapshot.docs.map(doc => ({
+        _id: doc.id,
+        ...doc.data()
+      }));
+      interviews.sort((a, b) => new Date(b.date || b.startTime || 0) - new Date(a.date || a.startTime || 0));
+    } catch (fsErr) {
+      console.warn("Firestore query notice in stats.js:", fsErr?.message || fsErr);
+    }
 
     if (interviews.length > 0) {
       stats.totalInterviews = interviews.length;

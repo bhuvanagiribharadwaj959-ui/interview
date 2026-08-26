@@ -22,33 +22,16 @@ export default async function handler(req, res) {
 
   try {
     const interviewsRef = collection(db, 'users', userId, 'sessions');
-    const q = query(
-      interviewsRef,
-      orderBy('startTime', 'desc')
-    );
-    
+    const q = query(interviewsRef);
     const querySnapshot = await getDocs(q);
     const interviews = querySnapshot.docs.map(doc => ({
       _id: doc.id,
       ...doc.data()
-    }));
-
+    })).sort((a, b) => new Date(b.startTime || 0) - new Date(a.startTime || 0));
     return res.status(200).json(interviews);
   } catch (error) {
-    console.error('Error fetching interview history:', error);
-    // Fallback if index doesn't exist for orderBy
-    try {
-      const interviewsRef = collection(db, 'users', userId, 'sessions');
-      const q = query(interviewsRef);
-      const querySnapshot = await getDocs(q);
-      const interviews = querySnapshot.docs.map(doc => ({
-        _id: doc.id,
-        ...doc.data()
-      })).sort((a, b) => new Date(b.startTime || 0) - new Date(a.startTime || 0));
-      return res.status(200).json(interviews);
-    } catch (e) {
-      return res.status(500).json({ error: 'Internal Server Error' });
-    }
+    console.warn('Firestore query notice in history.js:', error?.message || error);
+    return res.status(200).json([]);
   }
 }
 

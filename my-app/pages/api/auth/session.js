@@ -20,72 +20,81 @@ export default async function handler(req, res) {
     let userDoc;
     let userId;
 
-    if (uid) {
-      const userRef = doc(db, 'users', uid);
-      const userSnap = await getDoc(userRef);
+    try {
+      if (uid) {
+        const userRef = doc(db, 'users', uid);
+        const userSnap = await getDoc(userRef).catch(() => null);
 
-      if (userSnap.exists()) {
-        userId = uid;
-        userDoc = userSnap.data();
+        if (userSnap && userSnap.exists()) {
+          userId = uid;
+          userDoc = userSnap.data();
+        } else {
+          // Fallback check by email just in case they were registered without UID
+          const usersRef = collection(db, 'users');
+          const q = query(usersRef, where('email', '==', safeEmail));
+          const querySnapshot = await getDocs(q).catch(() => null);
+
+          if (querySnapshot && !querySnapshot.empty) {
+            const docSnap = querySnapshot.docs[0];
+            userId = docSnap.id;
+            userDoc = docSnap.data();
+            
+            // Link UID
+            await updateDoc(docSnap.ref, {
+              firebaseUid: uid,
+              updatedAt: new Date().toISOString()
+            }).catch(() => {});
+          } else {
+            // Create new user using the uid as the document ID
+            const now = new Date();
+            await setDoc(userRef, {
+              name: displayName || safeEmail.split('@')[0],
+              email: safeEmail,
+              firebaseUid: uid,
+              createdAt: now.toISOString(),
+              updatedAt: now.toISOString(),
+              authProvider: 'firebase',
+            }).catch(() => {});
+            userId = uid;
+            userDoc = {
+              name: displayName || safeEmail.split('@')[0],
+              email: safeEmail,
+            };
+          }
+        }
       } else {
-        // Fallback check by email just in case they were registered without UID
+        // Fallback if no uid is provided
         const usersRef = collection(db, 'users');
         const q = query(usersRef, where('email', '==', safeEmail));
-        const querySnapshot = await getDocs(q);
+        const querySnapshot = await getDocs(q).catch(() => null);
 
-        if (!querySnapshot.empty) {
-          const docSnap = querySnapshot.docs[0];
-          userId = docSnap.id;
-          userDoc = docSnap.data();
-          
-          // Link UID
-          await updateDoc(docSnap.ref, {
-            firebaseUid: uid,
-            updatedAt: new Date().toISOString()
-          });
-        } else {
-          // Create new user using the uid as the document ID
+        if (!querySnapshot || querySnapshot.empty) {
           const now = new Date();
-          await setDoc(userRef, {
+          const result = await addDoc(usersRef, {
             name: displayName || safeEmail.split('@')[0],
             email: safeEmail,
-            firebaseUid: uid,
             createdAt: now.toISOString(),
             updatedAt: now.toISOString(),
             authProvider: 'firebase',
-          });
-          userId = uid;
+          }).catch(() => null);
+          userId = result ? result.id : (uid || safeEmail);
           userDoc = {
             name: displayName || safeEmail.split('@')[0],
             email: safeEmail,
           };
+        } else {
+          const docSnap = querySnapshot.docs[0];
+          userId = docSnap.id;
+          userDoc = docSnap.data();
         }
       }
-    } else {
-      // Fallback if no uid is provided
-      const usersRef = collection(db, 'users');
-      const q = query(usersRef, where('email', '==', safeEmail));
-      const querySnapshot = await getDocs(q);
-
-      if (querySnapshot.empty) {
-        const now = new Date();
-        const result = await addDoc(usersRef, {
-          name: displayName || safeEmail.split('@')[0],
-          email: safeEmail,
-          createdAt: now.toISOString(),
-          updatedAt: now.toISOString(),
-          authProvider: 'firebase',
-        });
-        userId = result.id;
-        userDoc = {
-          name: displayName || safeEmail.split('@')[0],
-          email: safeEmail,
-        };
-      } else {
-        const docSnap = querySnapshot.docs[0];
-        userId = docSnap.id;
-        userDoc = docSnap.data();
-      }
+    } catch (dbErr) {
+      console.warn("Firestore session sync notice:", dbErr?.message || dbErr);
+      userId = uid || safeEmail;
+      userDoc = {
+        name: displayName || safeEmail.split('@')[0],
+        email: safeEmail,
+      };
     }
 
     const user = {

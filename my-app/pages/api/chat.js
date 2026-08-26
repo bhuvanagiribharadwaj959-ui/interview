@@ -46,7 +46,7 @@ export default async function handler(req, res) {
         'Authorization': `Bearer ${groqKey}`
       },
       body: JSON.stringify({
-        model: "llama-3.3-70b-versatile",
+        model: "openai/gpt-oss-120b",
         messages: [
           ...(systemMessage ? [systemMessage] : []),
           ...userMessages
@@ -63,7 +63,14 @@ export default async function handler(req, res) {
       return res.status(500).json({ error: data.error.message || 'Groq API error' });
     }
 
-    let finalReply = data.choices[0].message.content.trim();
+    let rawContent = data.choices?.[0]?.message?.content || '';
+    let finalReply = rawContent
+      .replace(/<think>[\s\S]*?<\/think>/gi, '')
+      .trim();
+
+    if (!finalReply) {
+      finalReply = "Could you please elaborate on that point?";
+    }
     
     return res.status(200).json({ reply: finalReply });
   } catch (e) {

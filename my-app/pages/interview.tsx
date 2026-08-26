@@ -198,12 +198,28 @@ export default function Interview() {
         try {
           await audio.play();
         } catch (playError) {
-          console.warn('Audio autoplay blocked or failed:', playError);
-          safelyReturnToListening();
+          console.warn('Audio autoplay blocked or failed, using SpeechSynthesis fallback:', playError);
+          if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
+            window.speechSynthesis.cancel();
+            const utter = new SpeechSynthesisUtterance(text);
+            utter.onend = safelyReturnToListening;
+            utter.onerror = safelyReturnToListening;
+            window.speechSynthesis.speak(utter);
+          } else {
+            safelyReturnToListening();
+          }
         }
       } else {
         setCurrentQuestion(text);
-        safelyReturnToListening();
+        if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
+          window.speechSynthesis.cancel();
+          const utter = new SpeechSynthesisUtterance(text);
+          utter.onend = safelyReturnToListening;
+          utter.onerror = safelyReturnToListening;
+          window.speechSynthesis.speak(utter);
+        } else {
+          safelyReturnToListening();
+        }
       }
     } catch (error) {
       if ((error as any)?.name === 'AbortError') {
@@ -211,7 +227,15 @@ export default function Interview() {
       }
       console.error("TTS playback error", error);
       setCurrentQuestion(text);
-      safelyReturnToListening();
+      if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
+        window.speechSynthesis.cancel();
+        const utter = new SpeechSynthesisUtterance(text);
+        utter.onend = safelyReturnToListening;
+        utter.onerror = safelyReturnToListening;
+        window.speechSynthesis.speak(utter);
+      } else {
+        safelyReturnToListening();
+      }
     } finally {
       if (ttsAbortControllerRef.current === controller) {
         ttsAbortControllerRef.current = null;
@@ -294,8 +318,9 @@ Rules of Conduct:
         throw new Error(data.error || 'Failed to fetch reply from AI');
       }
 
-      // Hide the [PHASE X/5] from being spoken or shown on screen by stripping it out
+      // Hide the [PHASE X/5] and <think> tags from being spoken or shown on screen by stripping it out
       let reply = (data.reply || data.message || "Error generating response.")
+        .replace(/<think>[\s\S]*?<\/think>/gi, '')
         .replace(/[\*\`]/g, '')
         .replace(/\[PHASE \d\/\d\]:?\s*/ig, '')
         .trim();
@@ -631,6 +656,23 @@ Rules of Conduct:
       window.removeEventListener('keyup', handleKeyUp);
     };
   }, [step, interviewState, isMuted, isSpacePressed]);
+
+  const toggleRecording = () => {
+    if (step !== STEPS.INTERVIEW || isMuted) return;
+
+    if (!isSpacePressed) {
+      setIsSpacePressed(true);
+      audioChunksRef.current = [];
+      if (mediaRecorderRef.current && mediaRecorderRef.current.state === 'inactive') {
+        try { mediaRecorderRef.current.start(); } catch {}
+      }
+    } else {
+      setIsSpacePressed(false);
+      if (mediaRecorderRef.current && mediaRecorderRef.current.state !== 'inactive') {
+        try { mediaRecorderRef.current.stop(); } catch {}
+      }
+    }
+  };
 
   useEffect(() => {
     return () => {
@@ -978,7 +1020,8 @@ Rules of Conduct:
       <motion.div 
         initial={{ opacity: 0, x: -20 }}
         animate={{ opacity: 1, x: 0 }}
-        className="absolute top-0 left-0 sm:-left-4 sm:-top-4 flex items-center gap-3 bg-white/90 backdrop-blur shadow-md px-4 py-2.5 rounded-2xl border border-gray-100 z-50 transition-all duration-300"
+        onClick={toggleRecording}
+        className="absolute top-0 left-0 sm:-left-4 sm:-top-4 flex items-center gap-3 bg-white/90 backdrop-blur shadow-md px-4 py-2.5 rounded-2xl border border-gray-100 z-50 transition-all duration-300 cursor-pointer hover:bg-gray-50 active:scale-95"
       >
         <div className="relative flex items-center justify-center">
           {isSpacePressed && (
@@ -995,10 +1038,10 @@ Rules of Conduct:
         </div>
         <div className="flex flex-col text-left">
           <span className="text-sm font-semibold text-[#202124]">
-            {isSpacePressed ? 'Recording...' : 'Hold Space'}
+            {isSpacePressed ? 'Recording...' : 'Hold Space / Click'}
           </span>
           <span className="text-[11px] text-[#5f6368]">
-            {isSpacePressed ? 'Release to send' : 'to speak'}
+            {isSpacePressed ? 'Release or Click to send' : 'to speak'}
           </span>
         </div>
       </motion.div>
